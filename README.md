@@ -124,7 +124,7 @@ This project requires the following environment variables to be set in `.env.loc
 # For local development, this should be http://localhost:3000
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
-📁 Project Structure
+## 📁 Project Structure
 This project follows the standard Next.js App Router structure.
 .
 ├── /app                  # Main application directory
