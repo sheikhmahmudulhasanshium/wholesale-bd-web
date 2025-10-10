@@ -1,0 +1,43 @@
+Excellent point. This is the most crucial detail for creating an authentic and relatable brand identity. The storyboard must reflect the reality of your customers. Stereotypes will immediately break trust.
+You are absolutely right about the attire and demographics. Professionalism in a hot climate isn't about wearing a suit; it's about being neat, efficient, and modern.
+Here is the revised, culturally-aware storyboard. I've focused on creating authentic characters and scenes that resonate with a modern Bangladeshi and Indian business audience.
+Revised Storyboard Brief: Culturally Authentic & Relatable
+Overall Art Direction:
+Characters: Diverse brown skin tones are the default. Show a range of ages and genders representing different types of business owners.
+Attire: Modern, practical, and climate-appropriate. Think neat polo shirts, short-sleeved collared shirts (fatuas), modern kurtis, shalwar kameez, and smart trousers or jeans. No suits. No overly traditional or ceremonial clothing.
+Environments: Authentic spaces. Small shops, modest back offices with metal desks and fans, clean warehouses, and bright, modern storefronts.
+Religious Neutrality: All scenes will be free of any specific religious symbols to ensure broad appeal.
+Part 1: The Challenge (The "Before" Story)
+Mood: Hectic, humid, stressful. A slightly warmer, desaturated color palette to suggest heat and dust.
+Banner 1: The Crowded Market
+Image Path: /banner/challenge-crowd.png
+Character: A young male entrepreneur in his late 20s, with a medium brown skin tone. He's wearing a simple, short-sleeved collared shirt that's slightly damp with sweat.
+Visual Concept: A tight, over-the-shoulder shot showing his perspective in a chaotic wholesale market. He's trying to get a vendor's attention but is blocked by other people and piles of goods. He's wiping sweat from his brow, looking frustrated.
+Key Elements: Sacks of goods, tangled wires overhead, the overwhelming visual noise of a real market. The focus is on his feeling of being stuck and wasting time.
+Banner 2: The Defective Product
+Image Path: /banner/challenge-defective.png
+Character: A female retailer in her 30s or 40s with a warm, deeper brown complexion. She's dressed in a smart, modern kurti and trousers.
+Visual Concept: A close-up on her hands examining a garment with a clear flaw (e.g., a misaligned print, a pulled thread). The setting is the back room of her small boutique, which is tidy but cramped.
+Key Elements: Her expression is not angry, but a subtle frown of deep disappointment and financial concern. The lighting is practical, coming from a fluorescent tube light overhead, casting realistic shadows.
+Banner 3: The Financial Stress
+Image Path: /banner/challenge-costs.png
+Character: An older, experienced shop owner in his 50s, with a weathered look. He's wearing glasses and a simple, light-colored cotton panjabi or button-down shirt.
+Visual Concept: He's sitting at a metal desk under a whirring ceiling fan, looking over a stack of handwritten ledgers (khatas) and loose receipts.
+Key Elements: The scene is dimly lit, perhaps in the evening after closing. He's massaging his temples, the posture of someone trying to make sense of confusing numbers and unexpected costs. The emotion is quiet anxiety.
+Part 2: The Solution (The "After" Story, powered by Wholesale BD)
+Mood: Bright, clean, air-conditioned, efficient. A crisp, clear color palette.
+Banner 4: The Verified Warehouse
+Image Path: /banner/solution-verified.png
+Characters: Two young professionals, a man and a woman, in their 20s. They have diverse brown skin tones. Both wear clean, branded "Wholesale BD" polo shirts and look energetic and focused.
+Visual Concept: They are in a brightly lit, impeccably organized warehouse. The woman is scanning a barcode on a box with a modern handheld device, while the man cross-references it on a tablet.
+Key Elements: The background shows neat aisles of products. The characters are smiling and collaborating, showcasing a tech-driven, efficient system. The lighting is bright and even.
+Banner 5: The Efficient Delivery
+Image Path: /banner/solution-fast.png
+Characters: A trustworthy delivery driver in a branded uniform hands a pristine, sealed box to the female retailer from Banner 2.
+Visual Concept: The exchange happens at the entrance of her now bright and welcoming shop. She is no longer frowning; she is smiling with relief and confidence. She might be signing for the delivery on a smartphone.
+Key Elements: The sun is out, the scene feels optimistic. This banner directly resolves the disappointment seen in Banner 2, creating a powerful character arc.
+Banner 6: The Secure Transaction
+Image Path: /banner/solution-secure.png
+Character: The young male entrepreneur from Banner 1.
+Visual Concept: He's now in his own clean, small office or a well-organized stock room, not the chaotic market. He is relaxed, leaning back slightly in his chair, and confirming an order on his smartphone.
+Key Elements: A close-up on the phone screen shows the clean Wholesale BD interface with a "Payment Successful" confirmation. He has a slight, confident smile. This banner shows him in control, having solved the problems from Banner 1. The environment is calm and professional.
