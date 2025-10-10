@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/public/logo/logo.svg" alt="Wholesale BD Logo" width="400"/>
+  <img src="https://raw.githubusercontent.com/sheikhmahmudulhasanshium/wholesale-bd-web/main/public/logo/logo.svg" alt="Wholesale BD Logo" width="400"/>
   <h1>Wholesale BD</h1>
   <p><strong>A Modern Digital Wholesale Marketplace for Bangladesh 🇧🇩</strong></p>
   <p>The official web application for Wholesale BD, a transparent and reliable e-commerce platform designed to solve the challenges of traditional sourcing for startups and retailers.</p>
@@ -7,9 +7,7 @@
 
 <div align="center">
 
-[![Deploy with Vercel](https://vercel.com/button)](https://wholesale-bd-web.vercel.app/)
-[![Build Status](https://github.com/your-username/your-repo/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/your-repo/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Deploy with Vercel](https://vercel.com/button)](https://wholesale-bd-web-app.vercel.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
@@ -22,7 +20,7 @@
 
 **Check out the live version of the application:**
 
-### 👉 **[https://wholesale-bd-web.vercel.app/](https://wholesale-bd-web.vercel.app/)**
+### 👉 **[https://wholesale-bd-web-app.vercel.app/](https://wholesale-bd-web-app.vercel.app/)**
 
 ---
 
@@ -32,7 +30,7 @@ _Here is a preview of the application's interface across different themes and de
 
 <div align="center">
   <img src="https://i.imgur.com/your-screenshot-url.png" alt="Project Screenshot Collage" width="800"/>
-  <p><sub>(It's recommended to replace this with a real screenshot collage showing light/dark modes on desktop and mobile.)</sub></p>
+  <p><sub>(To create a screenshot, you can use a tool like <a href="https://www.canva.com/create/mockups/">Canva Mockups</a> or simply take screenshots and combine them.)</sub></p>
 </div>
 
 ---
@@ -84,8 +82,8 @@ Follow these instructions to set up the project on your local machine for develo
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/your-repo.git
-    cd your-repo
+    git clone https://github.com/sheikhmahmudulhasanshium/wholesale-bd-web.git
+    cd wholesale-bd-web
     ```
 
 2.  **Install dependencies:**
@@ -95,11 +93,10 @@ Follow these instructions to set up the project on your local machine for develo
     ```
 
 3.  **Set up environment variables:**
-    Create a `.env.local` file in the root of your project and add the necessary environment variables.
-    ```bash
-    cp .env.example .env.local
+    Create a new file named `.env.local` in the root of your project and add the following content:
     ```
-    Now, open `.env.local` and set the `NEXT_PUBLIC_BASE_URL`.
+    NEXT_PUBLIC_BASE_URL=http://localhost:3000
+    ```
 
 4.  **Run the development server:**
     ```bash
@@ -114,35 +111,10 @@ Follow these instructions to set up the project on your local machine for develo
 
 ## 📄 Environment Variables
 
-This project requires the following environment variables to be set in `.env.local`:
+This project requires the following environment variable to be set in `.env.local`:
 
 ```plaintext
-# .env.example
-
 # The base URL of your deployed application.
 # Used for generating absolute URLs for SEO metadata and social media cards.
 # For local development, this should be http://localhost:3000
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
-
-## 📁 Project Structure
-This project follows the standard Next.js App Router structure.
-.
-├── /app                  # Main application directory
-│   ├── (routes)          # Grouped application routes
-│   │   ├── /about        # About page components
-│   │   ├── /login        # Login page components
-│   │   └── page.tsx      # Home page
-│   ├── /components       # Reusable components
-│   │   ├── /common       # Layout components (Header, Footer, etc.)
-│   │   ├── /contexts     # React Context providers (Theme, Language)
-│   │   └── /forms        # Form components (Login, Register)
-│   ├── layout.tsx        # Root layout of the application
-│   └── globals.css       # Global styles
-├── /components/ui        # Unstyled components from shadcn/ui
-├── /lib                  # Utility functions and data
-│   ├── data.tsx          # i18n content for pages
-│   ├── menu.tsx          # Navigation, zone, and footer data
-│   └── utils.ts          # Shared utility functions (e.g., cn)
-├── /public               # Static assets (images, logos, fonts)
-├── next.config.ts        # Next.js configuration
-└── tailwind.config.ts    # Tailwind CSS configuration
