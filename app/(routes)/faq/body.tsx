@@ -19,6 +19,7 @@ const Body = () => {
     return (
         <BasicPageProvider header={<Header/>} footer={<Footer/>} sidebar={null} navbar={null}>
             <div>
+                
                 Faq body
             </div>
         </BasicPageProvider>
