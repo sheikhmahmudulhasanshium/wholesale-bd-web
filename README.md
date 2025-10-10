@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/sheikhmahmudulhasanshium/wholesale-bd-web/main/public/logo/logo.svg" alt="Wholesale BD Logo" width="400"/>
+  <img src="https://wholesale-bd-web-app.vercel.app/logo/logo.svg" alt="Wholesale BD Logo" width="400"/>
   <h1>Wholesale BD</h1>
   <p><strong>A Modern Digital Wholesale Marketplace for Bangladesh 🇧🇩</strong></p>
   <p>The official web application for Wholesale BD, a transparent and reliable e-commerce platform designed to solve the challenges of traditional sourcing for startups and retailers.</p>
