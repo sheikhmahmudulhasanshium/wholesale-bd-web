@@ -1,13 +1,10 @@
-// components/forms/login-form.tsx
 "use client";
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -16,60 +13,47 @@ import { translations } from '@/lib/data';
 import { useLanguage } from '../contexts/language-context';
 import apiClient from '@/lib/apiClient';
 import { useAuth } from '../contexts/auth-context';
-
 const createFormSchema = (t: typeof translations.en) => z.object({
-  email: z.string().email({ message: t.invalidEmail }),
-  password: z.string().min(1, { message: "Password is required." }),
+  email: z.string().trim().email({ message: t.invalidEmail }),
+  password: z.string().trim().min(1, { message: "Password is required." }),
 });
-
 export function LoginForm() {
     const { language } = useLanguage();
     const t = translations[language];
     const { login } = useAuth();
-    
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-
     const formSchema = createFormSchema(t);
-
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: { email: "", password: "" },
     });
-
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsLoading(true);
         try {
-            // Use the new apiClient
             const response = await apiClient.auth.login(values);
             toast.success("Login successful! Redirecting...");
-            login(response.data.user); // Update auth context and redirect
+            login(response.data.access_token, response.data.user);
         } catch (error) {
-            // Error is already handled by the global interceptor's toast.
-            // We can optionally add form-specific errors here if needed.
-            const message = error instanceof Error ? error.message : "Login failed";
-            form.setError("root", { type: "manual", message });
+            form.setError("root", { type: "manual", message: "Invalid email or password." });
+            console.log(error);
         } finally {
             setIsLoading(false);
         }
     }
-
     const handleGoogleLogin = () => {
-        window.location.href = apiClient.auth.getGoogleLoginUrl();
+        toast.info("Google Sign-In is currently unavailable.");
     };
-
     return (
         <div className="space-y-6">
-            <Button variant="outline" className="w-full" disabled={isLoading} onClick={handleGoogleLogin}>
+            <Button variant="outline" className="w-full" disabled={true} onClick={handleGoogleLogin}>
                 <Chrome className="mr-2 h-4 w-4" />
                 {t.loginWithGoogle}
             </Button>
-            
             <div className="relative">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
                 <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">{t.orContinueWith}</span></div>
             </div>
-
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField control={form.control} name="email" render={({ field }) => ( 
@@ -81,7 +65,6 @@ export function LoginForm() {
                             <FormMessage /> 
                         </FormItem> 
                     )} />
-                    
                     <FormField
                         control={form.control}
                         name="password"
@@ -116,14 +99,15 @@ export function LoginForm() {
                             </FormItem>
                         )}
                     />
-
+                    {form.formState.errors.root && (
+                        <p className="text-sm font-medium text-destructive">{form.formState.errors.root.message}</p>
+                    )}
                     <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading && (<Loader2 className="mr-2 h-4 w-4 animate-spin" />)}
                         {t.loginWithEmail}
                     </Button>
                 </form>
             </Form>
-
             <p className="text-center text-sm text-muted-foreground">
                 {t.noAccount}{' '}
                 <Link href="/register" className="underline underline-offset-4 hover:text-primary">

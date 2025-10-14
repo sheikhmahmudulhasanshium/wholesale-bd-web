@@ -25,7 +25,7 @@ export default function AuthCallbackClient() {
       // The backend has set the cookies. Now we just need to fetch the user data
       // and update our frontend state by calling the profile endpoint.
       await checkLoggedInUser();
-      router.push('/dashboard'); 
+      router.push('/products'); 
       toast.success("Successfully logged in with Google!");
     };
     
