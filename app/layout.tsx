@@ -8,6 +8,7 @@ import { LanguageProvider } from "./components/contexts/language-context";
 import { ZoneProvider } from "./components/contexts/zone-context";
 import { AuthProvider } from "./components/contexts/auth-context";
 import { Toaster } from "@/components/ui/sonner";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 // Correctly define Poppins as the main 'sans' font
 const poppins = Poppins({
@@ -40,21 +41,23 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${geistMono.variable} antialiased font-sans`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            <LanguageProvider>
-              <ZoneProvider>
-                {children}
-                <Toaster richColors position="top-right" />
-              </ZoneProvider>
-            </LanguageProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              <LanguageProvider>
+                <ZoneProvider>
+                  {children}
+                  <Toaster richColors position="top-right" />
+                </ZoneProvider>
+              </LanguageProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );
