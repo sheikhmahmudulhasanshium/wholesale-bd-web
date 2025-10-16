@@ -1,5 +1,3 @@
-// FILE: @/app/components/hooks/use-product.tsx
-
 "use client";
 
 import { useState, useEffect } from 'react';

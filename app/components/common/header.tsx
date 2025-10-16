@@ -13,7 +13,7 @@ export function Header() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
-    <header className="relative z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+    <header className="relative z-50 flex h-16 items-center gap-4 border-b bg-accent px-4 md:px-6">
       {/* Logo */}
       <Link href="/" className="flex items-center space-x-2">
         <Image

@@ -1,0 +1,1284 @@
+create product worked curl
+curl -X POST 'https://wholesale-bd-production.up.railway.app/products' \
+-H 'accept: application/json' \
+-H 'Content-Type: application/json' \
+-H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM' \
+-d '{
+  "name": "Amazing Multipurpose Gift Box",
+  "description": "Present your products with the quality they deserve.",
+  "categoryId": "68e3af17bd6fde6e554feb07",
+  "zoneId": "68e3af17bd6fde6e554feb00",
+  "brand": "Dunder Mifflin Paper Box",
+  "model": "GB-5675vy54f",
+  "sku": "GB657tg",
+  "stockQuantity": 1000,
+  "minimumOrderQuantity": 50,
+  "unit": "piece",
+  "weight": 0.15,
+  "dimensions": "Small (2x2x2 inch)",
+  "specifications": "Key Features: Premium Construction",
+  "images": [
+    "https://f.nooncdn.com/p/pzsku/Z5B34E25C0ED7373CA51FZ/45/1755505211/b51fa572-7c93-4e59-9b0a-0591d895dbf8.jpg?width=800",
+    "https://www.etodagifts.com/wp-content/uploads/2024/12/IMG_20200121_121257_7.jpg"
+  ],
+  "pricingTiers": [
+    {
+      "minQuantity": 100,
+      "pricePerUnit": 100
+    },
+    {
+      "minQuantity": 500,
+      "pricePerUnit": 95
+    }
+  ]
+}'
+HTTP/1.1 201 Created
+Access-Control-Allow-Credentials: true
+Content-Length: 776
+Content-Type: application/json; charset=utf-8
+Date: Thu, 16 Oct 2025 08:08:11 GMT
+Etag: W/"308-fFYoFIVhPgaJI4wCuU/0LV/7GNM"
+Server: railway-edge
+Vary: Origin
+X-Powered-By: Express
+X-Railway-Edge: railway/us-east4-eqdc4a
+X-Railway-Request-Id: vW-UCxiMQ6G7UTHYg4a9AQ
+
+{"name":"Amazing Multipurpose Gift Box","description":"Present your products with the quality they deserve.","images":[],"categoryId":"68e3af17bd6fde6e554feb07","zoneId":"68e3af17bd6fde6e554feb00","sellerId":"68f0a7eba47c85d7b631c899","pricingTiers":[{"minQuantity":100,"pricePerUnit":100},{"minQuantity":500,"pricePerUnit":95}],"minimumOrderQuantity":50,"stockQuantity":1000,"unit":"piece","brand":"Dunder Mifflin Paper Box","model":"GB-5675vy54f","specifications":"Key Features: Premium Construction","status":"active","viewCount":0,"orderCount":0,"rating":0,"reviewCount":0,"sku":"GB657tg","weight":0.15,"dimensions":"Small (2x2x2 inch)","isActive":true,"_id":"68f0a7eba47c85d7b631c89a","createdAt":"2025-10-16T08:08:11.219Z","updatedAt":"2025-10-16T08:08:11.219Z","__v":0}
+
+
+getCurl(no filter)
+
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/products/seller/my-products?page=1&limit=100' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM'
+
+  {
+  "products": [
+    {
+      "_id": "68f0a7eba47c85d7b631c89a",
+      "name": "Amazing Multipurpose Gift Box",
+      "description": "Present your products with the quality they deserve.",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb07",
+        "name": "Clothing & Fashion",
+        "description": "Apparel, shoes, accessories for men, women, and children"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb00",
+        "name": "Dhaka",
+        "code": "DHA",
+        "description": "Capital city and largest commercial hub of Bangladesh"
+      },
+      "sellerId": null,
+      "pricingTiers": [
+        {
+          "minQuantity": 100,
+          "pricePerUnit": 100
+        },
+        {
+          "minQuantity": 500,
+          "pricePerUnit": 95
+        }
+      ],
+      "minimumOrderQuantity": 50,
+      "stockQuantity": 1000,
+      "unit": "piece",
+      "brand": "Dunder Mifflin Paper Box",
+      "model": "GB-5675vy54f",
+      "specifications": "Key Features: Premium Construction",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "GB657tg",
+      "weight": 0.15,
+      "dimensions": "Small (2x2x2 inch)",
+      "isActive": true,
+      "createdAt": "2025-10-16T08:08:11.219Z",
+      "updatedAt": "2025-10-16T08:08:11.219Z",
+      "__v": 0
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb1e",
+      "name": "Denim Jeans Collection",
+      "description": "Trendy denim jeans for men and women in multiple fits and washes",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb07",
+        "name": "Clothing & Fashion",
+        "description": "Apparel, shoes, accessories for men, women, and children"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb01",
+        "name": "Chittagong",
+        "code": "CTG",
+        "description": "Major port city and commercial center"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb13",
+        "email": "seller2@example.com",
+        "firstName": "Fatima",
+        "lastName": "Khatun",
+        "zone": "Chittagong",
+        "businessName": "Khatun Fashion House"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 20,
+          "maxQuantity": 99,
+          "pricePerUnit": 1200
+        },
+        {
+          "minQuantity": 100,
+          "maxQuantity": 299,
+          "pricePerUnit": 1100
+        },
+        {
+          "minQuantity": 300,
+          "pricePerUnit": 1000
+        }
+      ],
+      "minimumOrderQuantity": 20,
+      "stockQuantity": 800,
+      "unit": "piece",
+      "brand": "DenimCraft",
+      "model": "DC-DJ500",
+      "specifications": "98% Cotton, 2% Elastane, Slim/Regular/Relaxed Fit",
+      "status": "active",
+      "viewCount": 1,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "DC-DJ500-MIX",
+      "weight": 0.65,
+      "dimensions": "Various sizes",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-06T12:04:22.719Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb1f",
+      "name": "Formal Shirts",
+      "description": "Professional formal shirts for office wear, wrinkle-free fabric",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb07",
+        "name": "Clothing & Fashion",
+        "description": "Apparel, shoes, accessories for men, women, and children"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb01",
+        "name": "Chittagong",
+        "code": "CTG",
+        "description": "Major port city and commercial center"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb13",
+        "email": "seller2@example.com",
+        "firstName": "Fatima",
+        "lastName": "Khatun",
+        "zone": "Chittagong",
+        "businessName": "Khatun Fashion House"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 30,
+          "maxQuantity": 99,
+          "pricePerUnit": 800
+        },
+        {
+          "minQuantity": 100,
+          "maxQuantity": 249,
+          "pricePerUnit": 750
+        },
+        {
+          "minQuantity": 250,
+          "pricePerUnit": 700
+        }
+      ],
+      "minimumOrderQuantity": 30,
+      "stockQuantity": 1170,
+      "unit": "piece",
+      "brand": "OfficePro",
+      "model": "OP-FS300",
+      "specifications": "Wrinkle-free, Cotton-Polyester blend, Slim/Regular fit",
+      "status": "active",
+      "viewCount": 4,
+      "orderCount": 1,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "OP-FS300-WHT",
+      "weight": 0.25,
+      "dimensions": "Various sizes",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-06T17:39:41.683Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb20",
+      "name": "Winter Jackets",
+      "description": "Warm winter jackets with water-resistant coating",
+      "images": [
+        "68ed5bd577c182b6d92dff47"
+      ],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb07",
+        "name": "Clothing & Fashion",
+        "description": "Apparel, shoes, accessories for men, women, and children"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb01",
+        "name": "Chittagong",
+        "code": "CTG",
+        "description": "Major port city and commercial center"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb13",
+        "email": "seller2@example.com",
+        "firstName": "Fatima",
+        "lastName": "Khatun",
+        "zone": "Chittagong",
+        "businessName": "Khatun Fashion House"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 10,
+          "maxQuantity": 49,
+          "pricePerUnit": 2500
+        },
+        {
+          "minQuantity": 50,
+          "maxQuantity": 99,
+          "pricePerUnit": 2300
+        },
+        {
+          "minQuantity": 100,
+          "pricePerUnit": 2100
+        }
+      ],
+      "minimumOrderQuantity": 10,
+      "stockQuantity": 300,
+      "unit": "piece",
+      "brand": "WarmTech",
+      "model": "WT-WJ400",
+      "specifications": "Water-resistant, Insulated, Multiple pockets",
+      "status": "active",
+      "viewCount": 3,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "WT-WJ400-BLK",
+      "weight": 0.8,
+      "dimensions": "Various sizes",
+      "isActive": true,
+      "__v": 1,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-14T22:42:27.323Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb21",
+      "name": "Sports Shoes",
+      "description": "Comfortable sports shoes for running and casual wear",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb07",
+        "name": "Clothing & Fashion",
+        "description": "Apparel, shoes, accessories for men, women, and children"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb01",
+        "name": "Chittagong",
+        "code": "CTG",
+        "description": "Major port city and commercial center"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb13",
+        "email": "seller2@example.com",
+        "firstName": "Fatima",
+        "lastName": "Khatun",
+        "zone": "Chittagong",
+        "businessName": "Khatun Fashion House"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 12,
+          "maxQuantity": 35,
+          "pricePerUnit": 3500
+        },
+        {
+          "minQuantity": 36,
+          "maxQuantity": 71,
+          "pricePerUnit": 3200
+        },
+        {
+          "minQuantity": 72,
+          "pricePerUnit": 3000
+        }
+      ],
+      "minimumOrderQuantity": 12,
+      "stockQuantity": 400,
+      "unit": "pair",
+      "brand": "SportMax",
+      "model": "SM-SS600",
+      "specifications": "Breathable mesh, Cushioned sole, Sizes 6-12",
+      "status": "active",
+      "viewCount": 1,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "SM-SS600-WHT",
+      "weight": 0.6,
+      "dimensions": "Various sizes",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-06T12:04:30.865Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb22",
+      "name": "Premium Basmati Rice",
+      "description": "High-quality aged basmati rice, perfect for biriyani and special dishes",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb08",
+        "name": "Food & Beverages",
+        "description": "Fresh produce, packaged foods, beverages, and groceries"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb02",
+        "name": "Khulna",
+        "code": "KHL",
+        "description": "Industrial city in southwestern Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb14",
+        "email": "seller3@example.com",
+        "firstName": "Mohammad",
+        "lastName": "Hasan",
+        "zone": "Khulna",
+        "businessName": "Hasan Agro Products"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 50,
+          "maxQuantity": 199,
+          "pricePerUnit": 85
+        },
+        {
+          "minQuantity": 200,
+          "maxQuantity": 499,
+          "pricePerUnit": 80
+        },
+        {
+          "minQuantity": 500,
+          "pricePerUnit": 75
+        }
+      ],
+      "minimumOrderQuantity": 50,
+      "stockQuantity": 5000,
+      "unit": "kg",
+      "brand": "GoldenGrain",
+      "model": "GG-BR1000",
+      "specifications": "1-year aged, Extra long grain, Premium quality",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "GG-BR1000-50KG",
+      "weight": 50,
+      "dimensions": "80 x 50 x 15 cm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-06T11:59:20.458Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb23",
+      "name": "Organic Honey",
+      "description": "Pure organic honey sourced from Sundarbans region",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb08",
+        "name": "Food & Beverages",
+        "description": "Fresh produce, packaged foods, beverages, and groceries"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb02",
+        "name": "Khulna",
+        "code": "KHL",
+        "description": "Industrial city in southwestern Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb14",
+        "email": "seller3@example.com",
+        "firstName": "Mohammad",
+        "lastName": "Hasan",
+        "zone": "Khulna",
+        "businessName": "Hasan Agro Products"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 24,
+          "maxQuantity": 99,
+          "pricePerUnit": 450
+        },
+        {
+          "minQuantity": 100,
+          "maxQuantity": 249,
+          "pricePerUnit": 420
+        },
+        {
+          "minQuantity": 250,
+          "pricePerUnit": 400
+        }
+      ],
+      "minimumOrderQuantity": 24,
+      "stockQuantity": 1000,
+      "unit": "bottle",
+      "brand": "SundarHoney",
+      "model": "SH-OH500",
+      "specifications": "500ml bottle, 100% pure, No additives",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "SH-OH500-24PK",
+      "weight": 0.75,
+      "dimensions": "20 x 15 x 25 cm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-06T11:59:20.458Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb24",
+      "name": "Ceramic Dinner Set",
+      "description": "Elegant 24-piece ceramic dinner set for family dining",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb09",
+        "name": "Home & Garden",
+        "description": "Furniture, home decor, kitchen items, and garden supplies"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb00",
+        "name": "Dhaka",
+        "code": "DHA",
+        "description": "Capital city and largest commercial hub of Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb12",
+        "email": "seller1@example.com",
+        "firstName": "Ahmed",
+        "lastName": "Rahman",
+        "zone": "Dhaka",
+        "businessName": "Rahman Electronics Ltd"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 6,
+          "maxQuantity": 19,
+          "pricePerUnit": 3500
+        },
+        {
+          "minQuantity": 20,
+          "maxQuantity": 49,
+          "pricePerUnit": 3200
+        },
+        {
+          "minQuantity": 50,
+          "pricePerUnit": 3000
+        }
+      ],
+      "minimumOrderQuantity": 6,
+      "stockQuantity": 150,
+      "unit": "set",
+      "brand": "HomeElegance",
+      "model": "HE-CDS24",
+      "specifications": "24-piece set, Microwave safe, Dishwasher safe",
+      "status": "active",
+      "viewCount": 1,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "HE-CDS24-WHT",
+      "weight": 8.5,
+      "dimensions": "45 x 35 x 25 cm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-06T12:03:42.856Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb25",
+      "name": "Vitamin C Serum",
+      "description": "Anti-aging vitamin C serum for glowing skin",
+      "images": [
+        "https://picsum.photos/400",
+        "https://picsum.photos/400"
+      ],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb0a",
+        "name": "Health & Beauty",
+        "description": "Cosmetics, skincare, health supplements, and wellness products"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb01",
+        "name": "Chittagong",
+        "code": "CTG",
+        "description": "Major port city and commercial center"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb13",
+        "email": "seller2@example.com",
+        "firstName": "Fatima",
+        "lastName": "Khatun",
+        "zone": "Chittagong",
+        "businessName": "Khatun Fashion House"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 12,
+          "maxQuantity": 35,
+          "pricePerUnit": 1200
+        },
+        {
+          "minQuantity": 36,
+          "maxQuantity": 71,
+          "pricePerUnit": 1100
+        },
+        {
+          "minQuantity": 72,
+          "pricePerUnit": 1000
+        }
+      ],
+      "minimumOrderQuantity": 12,
+      "stockQuantity": 188,
+      "unit": "bottle",
+      "brand": "GlowSkin",
+      "model": "GS-VCS30",
+      "specifications": "30ml, 20% Vitamin C, Hyaluronic acid",
+      "status": "active",
+      "viewCount": 6,
+      "orderCount": 1,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "GS-VCS30-12PK",
+      "weight": 0.08,
+      "dimensions": "10 x 5 x 15 cm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.458Z",
+      "updatedAt": "2025-10-14T22:43:14.638Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb18",
+      "name": "Samsung Galaxy A54 5G",
+      "description": "Latest Samsung smartphone with 5G connectivity, 128GB storage, and triple camera setup",
+      "images": [
+        "https://picsum.photos/400",
+        "https://picsum.photos/400"
+      ],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb06",
+        "name": "Electronics",
+        "description": "Mobile phones, computers, accessories, and electronic devices"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb00",
+        "name": "Dhaka",
+        "code": "DHA",
+        "description": "Capital city and largest commercial hub of Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb12",
+        "email": "seller1@example.com",
+        "firstName": "Ahmed",
+        "lastName": "Rahman",
+        "zone": "Dhaka",
+        "businessName": "Rahman Electronics Ltd"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 1,
+          "maxQuantity": 9,
+          "pricePerUnit": 45000
+        },
+        {
+          "minQuantity": 10,
+          "maxQuantity": 49,
+          "pricePerUnit": 43000
+        },
+        {
+          "minQuantity": 50,
+          "pricePerUnit": 41000
+        }
+      ],
+      "minimumOrderQuantity": 1,
+      "stockQuantity": 150,
+      "unit": "piece",
+      "brand": "Samsung",
+      "model": "Galaxy A54 5G",
+      "specifications": "6.4\" Super AMOLED, Exynos 1380, 8GB RAM, 128GB Storage",
+      "status": "active",
+      "viewCount": 2,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "SAM-A54-128-BLK",
+      "weight": 0.202,
+      "dimensions": "158.2 x 76.7 x 8.2 mm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.457Z",
+      "updatedAt": "2025-10-07T13:41:00.484Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb19",
+      "name": "Apple iPhone 13",
+      "description": "Apple iPhone 13 with A15 Bionic chip, 128GB storage, and advanced dual-camera system",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb06",
+        "name": "Electronics",
+        "description": "Mobile phones, computers, accessories, and electronic devices"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb00",
+        "name": "Dhaka",
+        "code": "DHA",
+        "description": "Capital city and largest commercial hub of Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb12",
+        "email": "seller1@example.com",
+        "firstName": "Ahmed",
+        "lastName": "Rahman",
+        "zone": "Dhaka",
+        "businessName": "Rahman Electronics Ltd"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 1,
+          "maxQuantity": 4,
+          "pricePerUnit": 85000
+        },
+        {
+          "minQuantity": 5,
+          "maxQuantity": 19,
+          "pricePerUnit": 82000
+        },
+        {
+          "minQuantity": 20,
+          "pricePerUnit": 79000
+        }
+      ],
+      "minimumOrderQuantity": 1,
+      "stockQuantity": 75,
+      "unit": "piece",
+      "brand": "Apple",
+      "model": "iPhone 13",
+      "specifications": "6.1\" Super Retina XDR, A15 Bionic, 4GB RAM, 128GB Storage",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "APL-IP13-128-BLU",
+      "weight": 0.174,
+      "dimensions": "146.7 x 71.5 x 7.65 mm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.457Z",
+      "updatedAt": "2025-10-06T11:59:20.457Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb1a",
+      "name": "Wireless Bluetooth Earbuds",
+      "description": "Premium wireless earbuds with noise cancellation and 24-hour battery life",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb06",
+        "name": "Electronics",
+        "description": "Mobile phones, computers, accessories, and electronic devices"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb00",
+        "name": "Dhaka",
+        "code": "DHA",
+        "description": "Capital city and largest commercial hub of Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb12",
+        "email": "seller1@example.com",
+        "firstName": "Ahmed",
+        "lastName": "Rahman",
+        "zone": "Dhaka",
+        "businessName": "Rahman Electronics Ltd"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 10,
+          "maxQuantity": 49,
+          "pricePerUnit": 2500
+        },
+        {
+          "minQuantity": 50,
+          "maxQuantity": 99,
+          "pricePerUnit": 2200
+        },
+        {
+          "minQuantity": 100,
+          "pricePerUnit": 2000
+        }
+      ],
+      "minimumOrderQuantity": 10,
+      "stockQuantity": 300,
+      "unit": "piece",
+      "brand": "TechPro",
+      "model": "TP-WE100",
+      "specifications": "Bluetooth 5.0, Active Noise Cancellation, 24hr Battery",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "TP-WE100-BLK",
+      "weight": 0.05,
+      "dimensions": "6 x 4 x 3 cm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.457Z",
+      "updatedAt": "2025-10-06T11:59:20.457Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb1b",
+      "name": "Gaming Laptop",
+      "description": "High-performance gaming laptop with RTX graphics and 16GB RAM",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb06",
+        "name": "Electronics",
+        "description": "Mobile phones, computers, accessories, and electronic devices"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb00",
+        "name": "Dhaka",
+        "code": "DHA",
+        "description": "Capital city and largest commercial hub of Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb12",
+        "email": "seller1@example.com",
+        "firstName": "Ahmed",
+        "lastName": "Rahman",
+        "zone": "Dhaka",
+        "businessName": "Rahman Electronics Ltd"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 1,
+          "maxQuantity": 2,
+          "pricePerUnit": 120000
+        },
+        {
+          "minQuantity": 3,
+          "maxQuantity": 9,
+          "pricePerUnit": 115000
+        },
+        {
+          "minQuantity": 10,
+          "pricePerUnit": 110000
+        }
+      ],
+      "minimumOrderQuantity": 1,
+      "stockQuantity": 25,
+      "unit": "piece",
+      "brand": "ASUS",
+      "model": "ROG Strix G15",
+      "specifications": "15.6\" FHD 144Hz, AMD Ryzen 7, RTX 3060, 16GB RAM, 512GB SSD",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "ASUS-ROG-G15-RTX",
+      "weight": 2.3,
+      "dimensions": "35.4 x 25.9 x 2.34 cm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.457Z",
+      "updatedAt": "2025-10-06T11:59:20.457Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb1c",
+      "name": "Smart Watch",
+      "description": "Fitness tracking smartwatch with heart rate monitor and GPS",
+      "images": [],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb06",
+        "name": "Electronics",
+        "description": "Mobile phones, computers, accessories, and electronic devices"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb00",
+        "name": "Dhaka",
+        "code": "DHA",
+        "description": "Capital city and largest commercial hub of Bangladesh"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb12",
+        "email": "seller1@example.com",
+        "firstName": "Ahmed",
+        "lastName": "Rahman",
+        "zone": "Dhaka",
+        "businessName": "Rahman Electronics Ltd"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 5,
+          "maxQuantity": 19,
+          "pricePerUnit": 8500
+        },
+        {
+          "minQuantity": 20,
+          "maxQuantity": 49,
+          "pricePerUnit": 8000
+        },
+        {
+          "minQuantity": 50,
+          "pricePerUnit": 7500
+        }
+      ],
+      "minimumOrderQuantity": 5,
+      "stockQuantity": 100,
+      "unit": "piece",
+      "brand": "FitTech",
+      "model": "FT-SW200",
+      "specifications": "1.4\" AMOLED, GPS, Heart Rate Monitor, 7-day Battery",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "FT-SW200-BLK",
+      "weight": 0.045,
+      "dimensions": "4.5 x 3.8 x 1.2 cm",
+      "isActive": true,
+      "__v": 0,
+      "createdAt": "2025-10-06T11:59:20.457Z",
+      "updatedAt": "2025-10-06T11:59:20.457Z"
+    },
+    {
+      "_id": "68e3af18bd6fde6e554feb1d",
+      "name": "Premium Cotton T-Shirts",
+      "description": "High-quality 100% cotton t-shirts in various colors and sizes",
+      "images": [
+        "68ed50637e17f99a594c0419"
+      ],
+      "categoryId": {
+        "_id": "68e3af17bd6fde6e554feb07",
+        "name": "Clothing & Fashion",
+        "description": "Apparel, shoes, accessories for men, women, and children"
+      },
+      "zoneId": {
+        "_id": "68e3af17bd6fde6e554feb01",
+        "name": "Chittagong",
+        "code": "CTG",
+        "description": "Major port city and commercial center"
+      },
+      "sellerId": {
+        "_id": "68e3af18bd6fde6e554feb13",
+        "email": "seller2@example.com",
+        "firstName": "Fatima",
+        "lastName": "Khatun",
+        "zone": "Chittagong",
+        "businessName": "Khatun Fashion House"
+      },
+      "pricingTiers": [
+        {
+          "minQuantity": 50,
+          "maxQuantity": 199,
+          "pricePerUnit": 450
+        },
+        {
+          "minQuantity": 200,
+          "maxQuantity": 499,
+          "pricePerUnit": 400
+        },
+        {
+          "minQuantity": 500,
+          "pricePerUnit": 350
+        }
+      ],
+      "minimumOrderQuantity": 50,
+      "stockQuantity": 2000,
+      "unit": "piece",
+      "brand": "ComfortWear",
+      "model": "CW-CT100",
+      "specifications": "100% Cotton, Pre-shrunk, Available in S-XXL",
+      "status": "active",
+      "viewCount": 0,
+      "orderCount": 0,
+      "rating": 0,
+      "reviewCount": 0,
+      "sku": "CW-CT100-MIX",
+      "weight": 0.18,
+      "dimensions": "Various sizes",
+      "isActive": true,
+      "__v": 1,
+      "createdAt": "2025-10-06T11:59:20.457Z",
+      "updatedAt": "2025-10-13T19:17:56.381Z"
+    }
+  ],
+  "total": 15,
+  "page": 1,
+  "limit": 100,
+  "totalPages": 1
+}
+
+get categories
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/categories' \
+  -H 'accept: */*'
+
+  [
+  {
+    "_id": "68e3af17bd6fde6e554feb06",
+    "name": "Electronics",
+    "description": "Mobile phones, computers, accessories, and electronic devices",
+    "isActive": true,
+    "sortOrder": 1,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.951Z",
+    "updatedAt": "2025-10-06T11:59:19.951Z"
+  },
+  {
+    "_id": "68e3af17bd6fde6e554feb07",
+    "name": "Clothing & Fashion",
+    "description": "Apparel, shoes, accessories for men, women, and children",
+    "isActive": true,
+    "sortOrder": 2,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.951Z",
+    "updatedAt": "2025-10-06T11:59:19.951Z"
+  },
+  {
+    "_id": "68e3af17bd6fde6e554feb08",
+    "name": "Food & Beverages",
+    "description": "Fresh produce, packaged foods, beverages, and groceries",
+    "isActive": true,
+    "sortOrder": 3,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.951Z",
+    "updatedAt": "2025-10-06T11:59:19.951Z"
+  },
+  {
+    "_id": "68e3af17bd6fde6e554feb09",
+    "name": "Home & Garden",
+    "description": "Furniture, home decor, kitchen items, and garden supplies",
+    "isActive": true,
+    "sortOrder": 4,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.951Z",
+    "updatedAt": "2025-10-06T11:59:19.951Z"
+  },
+  {
+    "_id": "68e3af17bd6fde6e554feb0a",
+    "name": "Health & Beauty",
+    "description": "Cosmetics, skincare, health supplements, and wellness products",
+    "isActive": true,
+    "sortOrder": 5,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.951Z",
+    "updatedAt": "2025-10-06T11:59:19.951Z"
+  }
+]
+
+getzones
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/zones' \
+  -H 'accept: */*'
+
+  [
+  {
+    "_id": "68e3af17bd6fde6e554feb00",
+    "name": "Dhaka",
+    "code": "DHA",
+    "description": "Capital city and largest commercial hub of Bangladesh",
+    "isActive": true,
+    "sortOrder": 1,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.804Z",
+    "updatedAt": "2025-10-06T11:59:19.804Z"
+  },
+  {
+    "_id": "68e3af17bd6fde6e554feb01",
+    "name": "Chittagong",
+    "code": "CTG",
+    "description": "Major port city and commercial center",
+    "isActive": true,
+    "sortOrder": 2,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.805Z",
+    "updatedAt": "2025-10-06T11:59:19.805Z"
+  },
+  {
+    "_id": "68e3af17bd6fde6e554feb02",
+    "name": "Khulna",
+    "code": "KHL",
+    "description": "Industrial city in southwestern Bangladesh",
+    "isActive": true,
+    "sortOrder": 3,
+    "__v": 0,
+    "createdAt": "2025-10-06T11:59:19.805Z",
+    "updatedAt": "2025-10-06T11:59:19.805Z"
+  }
+]
+
+get products(filtered)
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/products/seller/my-products?search=phone&categoryId=68e3af17bd6fde6e554feb06&zoneId=68e3af17bd6fde6e554feb00&sellerId=123&status=active&minPrice=100&maxPrice=1000&sortBy=price&sortOrder=desc&page=1&limit=100' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM'
+
+{
+  "message": [
+    "minPrice must be a number conforming to the specified constraints",
+    "maxPrice must be a number conforming to the specified constraints"
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/products/seller/my-products?search=phone&categoryId=68e3af17bd6fde6e554feb06&zoneId=68e3af17bd6fde6e554feb00&status=active&minPrice=100&maxPrice=10000&sortBy=name&sortOrder=desc&page=1&limit=100' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM'
+{
+  "message": [
+    "minPrice must be a number conforming to the specified constraints",
+    "maxPrice must be a number conforming to the specified constraints"
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/products/zone/68e3af17bd6fde6e554feb00?page=1&limit=10' \
+  -H 'accept: */*'
+
+{
+  "products": [],
+  "total": 0,
+  "page": 1,
+  "limit": 10,
+  "totalPages": 0,
+  "zone": {
+    "id": "68e3af17bd6fde6e554feb00",
+    "name": "Dhaka",
+    "code": "DHA",
+    "description": "Capital city and largest commercial hub of Bangladesh"
+  }
+}
+
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/products/68e3af18bd6fde6e554feb1e/pricing-breakdown' \
+  -H 'accept: */*'
+
+  {
+  "minimumOrderQuantity": 20,
+  "unit": "piece",
+  "tiers": [
+    {
+      "minQuantity": 20,
+      "maxQuantity": 99,
+      "pricePerUnit": 1200,
+      "totalForMinQuantity": 24000
+    },
+    {
+      "minQuantity": 100,
+      "maxQuantity": 299,
+      "pricePerUnit": 1100,
+      "totalForMinQuantity": 110000,
+      "savingsFromFirstTier": 10000,
+      "savingsPercentage": 8.33
+    },
+    {
+      "minQuantity": 300,
+      "pricePerUnit": 1000,
+      "totalForMinQuantity": 300000,
+      "savingsFromFirstTier": 60000,
+      "savingsPercentage": 16.67
+    }
+  ]
+}
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/products/68e3af18bd6fde6e554feb1e' \
+  -H 'accept: */*'
+{
+  "_id": "68e3af18bd6fde6e554feb1e",
+  "name": "Denim Jeans Collection",
+  "description": "Trendy denim jeans for men and women in multiple fits and washes",
+  "images": [],
+  "categoryId": {
+    "_id": "68e3af17bd6fde6e554feb07",
+    "name": "Clothing & Fashion",
+    "description": "Apparel, shoes, accessories for men, women, and children"
+  },
+  "zoneId": {
+    "_id": "68e3af17bd6fde6e554feb01",
+    "name": "Chittagong",
+    "code": "CTG",
+    "description": "Major port city and commercial center"
+  },
+  "sellerId": {
+    "_id": "68e3af18bd6fde6e554feb13",
+    "email": "seller2@example.com",
+    "firstName": "Fatima",
+    "lastName": "Khatun",
+    "phone": "+8801722222222",
+    "zone": "Chittagong",
+    "businessName": "Khatun Fashion House"
+  },
+  "pricingTiers": [
+    {
+      "minQuantity": 20,
+      "maxQuantity": 99,
+      "pricePerUnit": 1200
+    },
+    {
+      "minQuantity": 100,
+      "maxQuantity": 299,
+      "pricePerUnit": 1100
+    },
+    {
+      "minQuantity": 300,
+      "pricePerUnit": 1000
+    }
+  ],
+  "minimumOrderQuantity": 20,
+  "stockQuantity": 800,
+  "unit": "piece",
+  "brand": "DenimCraft",
+  "model": "DC-DJ500",
+  "specifications": "98% Cotton, 2% Elastane, Slim/Regular/Relaxed Fit",
+  "status": "active",
+  "viewCount": 1,
+  "orderCount": 0,
+  "rating": 0,
+  "reviewCount": 0,
+  "sku": "DC-DJ500-MIX",
+  "weight": 0.65,
+  "dimensions": "Various sizes",
+  "isActive": true,
+  "__v": 0,
+  "createdAt": "2025-10-06T11:59:20.458Z",
+  "updatedAt": "2025-10-06T12:04:22.719Z"
+}
+
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/products/68f0a7eba47c85d7b631c89a' \
+  -H 'accept: */*'
+  {
+  "_id": "68f0a7eba47c85d7b631c89a",
+  "name": "Amazing Multipurpose Gift Box",
+  "description": "Present your products with the quality they deserve.",
+  "images": [],
+  "categoryId": {
+    "_id": "68e3af17bd6fde6e554feb07",
+    "name": "Clothing & Fashion",
+    "description": "Apparel, shoes, accessories for men, women, and children"
+  },
+  "zoneId": {
+    "_id": "68e3af17bd6fde6e554feb00",
+    "name": "Dhaka",
+    "code": "DHA",
+    "description": "Capital city and largest commercial hub of Bangladesh"
+  },
+  "sellerId": null,
+  "pricingTiers": [
+    {
+      "minQuantity": 100,
+      "pricePerUnit": 100
+    },
+    {
+      "minQuantity": 500,
+      "pricePerUnit": 95
+    }
+  ],
+  "minimumOrderQuantity": 50,
+  "stockQuantity": 1000,
+  "unit": "piece",
+  "brand": "Dunder Mifflin Paper Box",
+  "model": "GB-5675vy54f",
+  "specifications": "Key Features: Premium Construction",
+  "status": "active",
+  "viewCount": 0,
+  "orderCount": 0,
+  "rating": 0,
+  "reviewCount": 0,
+  "sku": "GB657tg",
+  "weight": 0.15,
+  "dimensions": "Small (2x2x2 inch)",
+  "isActive": true,
+  "createdAt": "2025-10-16T08:08:11.219Z",
+  "updatedAt": "2025-10-16T08:08:11.219Z",
+  "__v": 0
+}
+need to integrate later:
+curl -X 'POST' \
+  'https://wholesale-bd-production.up.railway.app/uploads/products' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM' \
+  -d ''
+
+  {
+  "message": "No files provided",
+  "error": "Bad Request",
+  "statusCode": 400
+}
+
+curl -X 'GET' \
+  'https://wholesale-bd-production.up.railway.app/uploads/presigned/2121432' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM'
+
+  {
+  "message": "File not found",
+  "error": "Not Found",
+  "statusCode": 404
+}
+curl -X 'POST' \
+  'https://wholesale-bd-production.up.railway.app/uploads/images' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM' \
+  -d ''
+  {
+  "message": "No files provided",
+  "error": "Bad Request",
+  "statusCode": 400
+}
+
+curl -X 'POST' \
+  'https://wholesale-bd-production.up.railway.app/uploads/image' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OGUzYWYxOGJkNmZkZTZlNTU0ZmViMTMiLCJlbWFpbCI6InNlbGxlcjJAZXhhbXBsZS5jb20iLCJmaXJzdE5hbWUiOiJGYXRpbWEiLCJsYXN0TmFtZSI6IktoYXR1biIsInJvbGUiOiJzZWxsZXIiLCJpYXQiOjE3NjA2MDA4NDMsImV4cCI6MTc2MDY4NzI0M30.dnTr2Swg1pS7Lvc4S4HH4UNRtX-ymK-xlw_pXHKLLQM' \
+  -d ''
+
+  {
+  "message": "No file provided",
+  "error": "Bad Request",
+  "statusCode": 400
+}
+
+
+https://nextjs.org/learn/seo/rendering-strategies
