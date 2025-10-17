@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { Suspense, useState, useRef, useEffect, Fragment } from 'react';
+import React, { Suspense, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -8,7 +9,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 // Hooks & Providers
 import { useProduct } from '@/app/components/hooks/get-product';
 import { useLanguage } from '@/app/components/contexts/language-context';
-import { BasicPageProvider } from '@/app/components/providers/basic-page-provider';
+// REMOVED: Fragment import is not used
 
 // Common Components
 import { Header } from '@/app/components/common/header';
@@ -31,7 +32,7 @@ import {
 
 
 // =================================================================================
-// LOCAL DASHBOARD NAVIGATION (This remains the same)
+// LOCAL DASHBOARD NAVIGATION
 // =================================================================================
 const dashboardNavLinks = [
   { name: { en: 'Dashboard', bn: 'ড্যাশবোর্ড' }, href: '/dashboard', icon: LayoutDashboard },
@@ -140,12 +141,12 @@ function EditProductPageContent() {
   const { language } = useLanguage();
 
   const { data: product, isLoading, error } = useProduct(productId);
-  const pageText = { pageTitle: { en: 'Edit Product', bn: 'পণ্য এডিট করুন' }, loading: { en: 'Loading Product...', bn: 'পণ্য লোড হচ্ছে...' }, errorTitle: { en: 'Error Loading Product', bn: 'পণ্য লোড করতে ত্রুটি' }, errorDescription: { en: 'There was an issue fetching the product data. Please check your connection and try again.', bn: 'পণ্যের ডেটা আনতে একটি সমস্যা হয়েছে। অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।' }, notFoundTitle: { en: 'Product Not Found', bn: 'পণ্যটি খুঁজে পাওয়া যায়নি' }, notFoundDescription: { en: 'We couldn’t find a product with the specified ID. It may have been moved or deleted. Please use the search bar in the header to find another product.', bn: 'নির্দিষ্ট আইডি সহ একটি পণ্য খুঁজে পাওয়া যায়নি। এটি সরানো বা মুছে ফেলা হতে পারে। অন্য পণ্য খুঁজতে অনুগ্রহ করে হেডারে সার্চ বার ব্যবহার করুন।' }, goToDashboard: { en: 'Go to Dashboard', bn: 'ড্যাশবোর্ডে যান' }, editingTitle: { en: 'Editing:', bn: 'এডিট করছেন:' } };
+  const pageText = { pageTitle: { en: 'Edit Product', bn: 'পণ্য এডিট করুন' }, loading: { en: 'Loading Product...', bn: 'পণ্য লোড হচ্ছে...' }, errorTitle: { en: 'Error Loading Product', bn: 'পণ্য লোড করতে ত্রুটি' }, errorDescription: { en: 'There was an issue fetching the product data. Please check your connection and try again.', bn: 'পণ্যের ডেটা আনতে একটি সমস্যা হয়েছে। অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।' }, notFoundTitle: { en: 'Product Not Found', bn: 'পণ্যটি খুঁজে পাওয়া যায়নি' }, notFoundDescription: { en: 'We couldn’t find a product with the specified ID. It may have been moved or deleted. Please use the search bar in the header to find another product.', bn: 'নির্দিষ্ট আইডি সহ একটি পণ্য খুঁজে পাওয়া যায়নি। এটি সরানো বা মুছে ফেলা হতে পারে। অনুগ্রহ করে অন্য পণ্য খুঁজেতে হেডারে সার্চ বার ব্যবহার করুন।' }, goToDashboard: { en: 'Go to Dashboard', bn: 'ড্যাশবোর্ডে যান' }, editingTitle: { en: 'Editing:', bn: 'এডিট করছেন:' } };
   
-  const renderContent = () => { /* ... your full renderContent function ... */ };
+  // REMOVED: The unused function declaration `renderContent` which triggered a warning.
   
   return (
-    <div data-hide-breadcrumb> {/* This attribute will be used by CSS to hide the default breadcrumb */}
+    <div data-hide-breadcrumb>
       {/* We are NOT using BasicPageProvider here to have full control */}
       <style jsx global>{`
         [data-hide-breadcrumb] [data-id="default-breadcrumb-nav"] {
@@ -175,7 +176,6 @@ function EditProductPageContent() {
                 {pageText.pageTitle[language]}
               </h1>
             )}
-            {/* ... (Your existing renderContent logic) ... */}
             {isLoading && <div className="space-y-6"><Skeleton className="h-10 w-3/4" /><div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-48 w-full" /><Skeleton className="h-32 w-full" /></div></div>}
             {error && <Card className="border-destructive"><CardHeader><CardTitle className="flex items-center gap-3 text-destructive"><AlertTriangle />{pageText.errorTitle[language]}</CardTitle><CardDescription>{pageText.errorDescription[language]}</CardDescription></CardHeader></Card>}
             {(!productId || !product) && !isLoading && !error && <Card><CardHeader><CardTitle className="flex items-center gap-3"><SearchX className="text-muted-foreground" />{pageText.notFoundTitle[language]}</CardTitle><CardDescription>{pageText.notFoundDescription[language]}</CardDescription></CardHeader><CardContent><Button asChild><Link href="/dashboard">{pageText.goToDashboard[language]}</Link></Button></CardContent></Card>}

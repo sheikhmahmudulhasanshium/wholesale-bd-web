@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import apiClient from '@/lib/apiClient'; // ✅ FIXED: Import the main apiClient
+import apiClient from '@/lib/apiClient';
 import { ProductQuery, PaginatedProductsResponse } from '@/lib/types';
 import axios from 'axios';
 
@@ -19,9 +19,8 @@ export const useProducts = (filters: ProductQuery) => {
       setIsLoading(true);
       setError(null);
       try {
-        // ✅ FIXED: Call the method from the correct namespace and pass the signal
         const response = await apiClient.products.getAll(filters, controller.signal);
-        setData(response.data); // Axios responses are nested in a `data` property
+        setData(response.data);
       } catch (err) {
         if (axios.isCancel(err)) {
           console.log('Request canceled');
@@ -38,6 +37,9 @@ export const useProducts = (filters: ProductQuery) => {
     return () => {
       controller.abort();
     };
+    // FIX: Suppress linting for this line as using JSON.stringify is intentional for deep equality checking
+    // Using the raw 'filters' object here might lead to infinite loops if the object reference changes on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
 
   return { data, isLoading, error };

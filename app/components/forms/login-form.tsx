@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Chrome, Loader2, Eye, EyeOff } from "lucide-react";
+import {  Loader2, Eye, EyeOff } from "lucide-react";
 import { translations } from "@/lib/data";
 import { useLanguage } from "../contexts/language-context";
 import apiClient from "@/lib/apiClient";

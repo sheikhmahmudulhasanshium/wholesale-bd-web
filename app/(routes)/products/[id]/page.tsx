@@ -1,59 +1,71 @@
-import { Metadata } from 'next';
-import Body from './components/body'; // Client-side component
+// app/(routes)/products/[id]/page.tsx
 
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  images: string[];
+import { Metadata } from "next";
+import ProductBody from "./components/body";
+
+interface PageProps { 
+  // params is now treated as a Promise in Server Components/Metadata functions
+  params: Promise<{ id: string }>;
 }
 
 // SSR: Generate dynamic metadata (Open Graph, SEO) for each page
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const { id } = params; // No need to await params here since it's already resolved by Next.js
-  const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
-  // Fetch product data for metadata
-  const res = await fetch(`https://wholesale-bd-production.up.railway.app/products/${id}`, {
-    headers: { accept: '*/*' },
-    cache: 'force-cache',
-  });
-
-  if (!res.ok) {
-    return {
-      title: 'Product not found',
-      description: 'The requested product does not exist.',
-      openGraph: {
-        title: 'Product not found',
-        description: 'No product data available',
-        images: [],
-      },
-    };
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  // FIX: Await params before accessing its properties
+  const { id } = await params;
+  
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  let product: { name?: string; description?: string; images?: string[] } | null = null;
+  
+  // NOTE: Using direct fetch here as api.client relies on global execution context
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}products/${id}`);
+    if (response.ok) {
+        product = await response.json();
+    }
+  } catch (error) {
+    console.error(`Error fetching product ${id} for metadata:`, error);
   }
 
-  const product = await res.json(); // Parse the product data
+  const defaultTitle = `Product ID: ${id} | Wholesale BD`;
+  const defaultDescription = "Detailed information for this specific product.";
+
+  const title = product?.name || defaultTitle;
+  const description = product?.description || defaultDescription;
+  
+  // Use the first image URL or a default fallback
+  const imageUrl = product?.images?.[0] || `${baseUrl}/logo/logo.png`; 
 
   return {
-    title: product.name,
-    description: product.description,
+    metadataBase: new URL(baseUrl),
+    title,
+    description,
     openGraph: {
-      title: product.name,
-      description: product.description,
-      images: product.images.map((url: string) => ({ url })),
+      title,
+      description,
+      url: new URL(`/products/${id}`, baseUrl),
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      // FIX: Changed "product" to "article" to satisfy Next.js Metadata types
+      type: "article", 
     },
     twitter: {
-      card: 'summary_large_image',
-      site: '@your_site',
-      title: product.name,
-      description: product.description,
-      images: product.images[0] || `${baseURL}/logo/logo.png`, // Use the first image for Twitter card
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
     },
   };
 }
-
 // SSR Page Rendering for Dynamic Routes
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const { id } = params; // params is directly accessible in SSR
-
-  return <Body id={id} />; // Pass the `id` directly to the Body component for client-side rendering
+export default async function ProductPage({ params }: PageProps) {
+  // FIX: Await params before accessing properties
+  const { id } = await params; 
+  
+  return <ProductBody id={id} />; 
 }
