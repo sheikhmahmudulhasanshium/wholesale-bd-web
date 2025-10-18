@@ -1,0 +1,97 @@
+This is the perfect next step. Since you want this material to be easily transferable to visual tools like Figma, Sketch, or Canva, I will provide a **detailed, prescriptive wireframe specification** for each slide.
+
+This guidance focuses on layout, visual hierarchy, and element placement, allowing your designer to execute the concepts quickly while maintaining the brand consistency of Wholesale BD and the stylistic references of Amazon/Daraz.
+
+---
+
+## Hero Banner Specification Sheet
+
+### 1. Flash Sale – “Limited‑Time Deal” (The Urgency Slide)
+
+| Feature | Desktop (1920x800 px) | Mobile (375x667 px) |
+| :--- | :--- | :--- |
+| **Layout Style** | 55% Text/Info (Left) / 45% Product (Right) | Stacked, Full Width |
+| **Background** | Solid, high-contrast color (Deep Red `#C80000` or Hot Orange). | Solid Red/Orange fill. |
+| **Image** | 1–3 products, large, positioned right, slightly overlapping the centre line for dynamism. Product must have a strong glow/pop effect. | Product centered, full width, high visibility. |
+| **Headline** | **FLASH SALE – Ends in 24h** (Large, Bold, White text) | **FLASH SALE** (Centered, Bold) |
+| **Sub-text** | Up to 60% OFF on best sellers (Smaller, directly below headline). | Up to 60% OFF (Centered, slightly smaller font). |
+| **Key Element** | **Countdown Timer:** Prominently placed, digital style (Black/White numbers on a solid contrasting block). Positioned near the CTA or floating over the top right of the product image. | **Countdown Timer:** Fixed bar at the very top of the screen (or banner area) in a contrasting colour to maintain urgency on scroll. |
+| **CTA Button** | **Shop the Deal** (Primary Brand Color, High-contrast hover effect). Placed below text stack. | **Shop the Deal** (Centered, large touch target). |
+| **Design Note** | Use bold, aggressive fonts (e.g., Arial Black or similar heavy sans-serif) and minimize empty space to increase FOMO. | |
+
+---
+
+### 2. New Arrivals – “Just Dropped” (The Aspiration Slide)
+
+| Feature | Desktop (1920x800 px) | Mobile (375x667 px) |
+| :--- | :--- | :--- |
+| **Layout Style** | 40% Text (Left) / 60% Image (Right) | Image Dominant Overlay |
+| **Background** | Clean, minimalist background (White or light grey `#F8F8F8`). | Clean background color or light full-width image. |
+| **Image** | Single, high-resolution hero product (e.g., a sleek gadget or a styled fashion item). Must feel premium. Use subtle reflection/shadows. | Product full-width, dominating the viewport. |
+| **Headline** | **Just Dropped** (Medium size, elegant font, primary brand color). | **Just Dropped** (Centered, overlaid near the top). |
+| **Sub-text** | Be the first to shop our new arrivals (Lightweight font, subtle colour). | Be the first... (Smaller, centered). |
+| **Key Element** | Small, elegant ‘NEW’ badge near the product or headline. | Minimalist styling to emphasize product quality. |
+| **CTA Button** | **See What’s New** (Secondary Brand Color, clean border/outline effect). | **See What’s New** (Centered, clean style). |
+| **Design Note** | The overall aesthetic should feel like a high-end magazine layout. Use ample negative space. | If text overlays the image, use a subtle **linear gradient fade** behind the text area for guaranteed readability. |
+
+---
+
+### 3. Shop by Category – “Explore & Discover” (The Navigation Slide)
+
+| Feature | Desktop (1920x800 px) | Mobile (375x667 px) |
+| :--- | :--- | :--- |
+| **Layout Style** | 35% Text (Left) / 65% Category Grid (Right) | Stacked Text + Horizontal Swipe |
+| **Background** | Light, neutral background with subtle branding element/pattern. | Light, neutral background. |
+| **Image** | **Category Grid:** 4 or 6 equal-sized squares/rectangles on the right side, each containing a compelling image representing a major category (e.g., "Electronics," "Home," "Fashion"). | **Category Cards:** 3 or 4 swipeable cards presented horizontally. |
+| **Headline** | **Find What You’re Into** (Informative, clear font). | **Find What You’re Into** (Centered or Left-aligned). |
+| **Sub-text** | Explore categories made for you (Direct and functional). | Explore categories... (Below headline). |
+| **Key Element** | Each item in the grid/carousel must have a clear category name label overlaid on the image or directly below it, acting as a link. | Horizontal swipe indicators (dots or arrows) for the category carousel. |
+| **CTA Button** | **Browse Categories** (Functional CTA, leading to the main navigation page). | **Browse Categories** (Standard placement below text). |
+| **Design Note** | This slide is about structure. Ensure padding and gutters between grid items are clean and consistent. Mirrors the common category browsing block seen on Amazon's homepage. | |
+
+---
+
+### 4. Bestsellers – “Top Picks This Month” (The Social Proof Slide)
+
+| Feature | Desktop (1920x800 px) | Mobile (375x667 px) |
+| :--- | :--- | :--- |
+| **Layout Style** | 40% Text (Left) / 60% Product Strip (Right) | Stacked Text + Horizontal Carousel |
+| **Background** | Brand colour (e.g., mid-tone blue or green) to signify reliability and trust. | Solid mid-tone background. |
+| **Image** | **Product Strip:** A horizontal row of 4–5 small, uniform product shots (thumbnails), all with consistent white backgrounds, showing variety. | Full-width horizontal swipeable carousel of products. |
+| **Headline** | **This Month’s Favorites** (Focuses on community endorsement). | **This Month’s Favorites** (Centered, strong emphasis). |
+| **Sub-text** | Loved by thousands of shoppers (Enhances the social proof message). | Loved by thousands... (Centered). |
+| **Key Element** | Small social proof indicators over the images (e.g., a "TOP SELLER" badge, a 5-star rating graphic, or a "#1"). | Ensure product cards on mobile show the name and a price briefly. |
+| **CTA Button** | **Shop Bestsellers** (Clear, direct conversion CTA). | **Shop Bestsellers** (Prominent touch target). |
+| **Design Note** | Maintain visual consistency across the product images. The strip/carousel should feel curated and easy to skim. | |
+
+---
+
+### 5. Brand Values – “Why Shop With Us” (The Connection Slide)
+
+| Feature | Desktop (1920x800 px) | Mobile (375x667 px) |
+| :--- | :--- | :--- |
+| **Layout Style** | Full-Bleed Image Background with Text Overlay | Full-Bleed Image Background with Text Overlay |
+| **Background** | Full-bleed, high-quality photograph (e.g., sustainable packaging, smiling team member, local landscape). | Full-bleed image. |
+| **Image** | Photographic, warm, authentic style. Not standard e-commerce product photos. | Photographic, high resolution. |
+| **Headline** | **We Care Beyond the Cart** (Emotional and values-driven headline). | **We Care Beyond the Cart** (Large, centered). |
+| **Sub-text** | Sustainable, ethical & customer-first shopping (Key value proposition summary). | Sustainable, ethical... (Centered). |
+| **Key Element** | To ensure text legibility over complex photography, place a **semi-transparent dark overlay** (e.g., Black at 30% opacity) or a **gradient fade** over the image behind the text area. | Ensure the text overlay is strong enough for visibility on small screens. |
+| **CTA Button** | **Our Story** (Links to About Us or Sustainability Page). | **Our Story** (Subtle, less aggressive than sale CTAs). |
+| **Design Note** | Use elegant, readable fonts (e.g., Serif or clean Humanist Sans-serif). This slide is about narrative and connection, not high speed. | |
+
+---
+
+## 🎨 Implementation Guidance: Figma/Canva Checklist
+
+To execute these wireframes in your preferred design tool (Figma, Canva, Sketch, etc.), follow this checklist:
+
+1.  **Establish Grid System:** Define your desktop grid (12-column recommended) and mobile grid, and ensure all text/image splits (55/45, 40/60) snap cleanly to those columns.
+2.  **Define Typography:** Set the visual style for three levels:
+    *   **Level 1 (Urgency/Sale):** Bold, heavy Sans-serif (used in Slide 1).
+    *   **Level 2 (Product/Utility):** Clean, standard Sans-serif (used in Slides 2, 3, 4).
+    *   **Level 3 (Values/Connection):** Elegant Sans-serif or Serif (used in Slide 5).
+3.  **Color Palette Integration:** Apply Wholesale BD's primary and secondary brand colors consistently, using the contrast colors (Red/Orange) only for the Flash Sale slide (Slide 1) to maximize impact.
+4.  **Component Creation:** Create reusable components for the Countdown Timer, the CTA button styles (Primary, Secondary, Outline), and the Product Card template (used in Bestsellers/Category).
+5.  **Responsiveness Check:** Verify that the mobile stack for each slide looks good at the 375px breakpoint and scales appropriately up to tablet size. Ensure images crop intelligently to keep the focal point visible.
+
+These specifications give your design team clear, measurable instructions for every element on every banner, ensuring speed and accuracy in development.
