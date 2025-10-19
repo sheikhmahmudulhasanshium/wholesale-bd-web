@@ -30,7 +30,6 @@ export default function AuthCallbackClient() {
     };
     
     handleAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, router, checkLoggedInUser]);
 
   // This UI will be shown while the useEffect hook is running.

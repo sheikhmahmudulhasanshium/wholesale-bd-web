@@ -91,7 +91,7 @@ const variantsScaleLight: Variants = {
 
 const allVariants = [variantsSlide, variantsFade, variantsScaleLight];
 
-export const HeroImageSlider: React.FC<HeroImageSliderProps> = ({
+export const ImageSlider: React.FC<HeroImageSliderProps> = ({
   slides,
   interval = 5000,
   autoplay = true,

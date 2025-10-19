@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import HomeClient from "./body";
+import HomeClient from "./home/body";
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";

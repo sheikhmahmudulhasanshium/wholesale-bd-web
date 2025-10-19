@@ -116,6 +116,10 @@ class ApiClient {
     getCategories: (): Promise<{ data: Category[] }> => this.instance.get('/categories'),
     getZones: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
   };
+    zones = {
+    getAll: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
+  };
+
 }
 
 const apiClient = new ApiClient();
