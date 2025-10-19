@@ -3,13 +3,13 @@ import type { Metadata } from 'next';
 // --- Auth & User Types ---
 export interface User {
   _id: string;
-  id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: "customer" | "seller" | "admin";
   profilePicture?: string;
   businessName?: string;
+  phone?: string;
 }
 
 export interface AuthResponse {
