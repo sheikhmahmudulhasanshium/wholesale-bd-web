@@ -121,7 +121,7 @@ const sampleProducts: ProductType[] = [
     description: "Present your products with the quality they deserve.",
     images: [],
     categoryId: { _id: "68e3af17bd6fde6e554feb07", name: "Clothing & Fashion", description: "Apparel, shoes, accessories for men, women, and children" },
-    zoneId: { _id: "68e3af17bd6fde6e554feb00", name: "Dhaka", code: "DHA", description: "Capital city and largest commercial hub of Bangladesh" },
+    zoneId: { _id: "68e3af17bd6fde6e554feb00", name: "Dhaka", code: "DHA", description: "Capital city and largest commercial hub of Bangladesh" ,isActive:true, sortingOrder:1},
     sellerId: { _id: "someSellerId1", email: "seller1@example.com", firstName: "Test", lastName: "Seller", businessName: "Test Business" }, // Mock sellerId
     pricingTiers: [
       { minQuantity: 100, pricePerUnit: 100 },
@@ -144,7 +144,7 @@ const sampleProducts: ProductType[] = [
     description: "Trendy denim jeans for men and women in multiple fits and washes",
     images: [],
     categoryId: { _id: "68e3af17bd6fde6e554feb07", name: "Clothing & Fashion", description: "Apparel, shoes, accessories for men, women, and children" },
-    zoneId: { _id: "68e3af17bd6fde6e554feb01", name: "Chittagong", code: "CTG", description: "Major port city and commercial center" },
+    zoneId: { _id: "68e3af17bd6fde6e554feb01", name: "Chittagong", code: "CTG", description: "Major port city and commercial center" ,isActive:true, sortingOrder:2},
     sellerId: { _id: "68e3af18bd6fde6e554feb13", email: "seller2@example.com", firstName: "Fatima", lastName: "Khatun", zone: "Chittagong", businessName: "Khatun Fashion House" },
     pricingTiers: [
       { minQuantity: 20, maxQuantity: 99, pricePerUnit: 1200 },
