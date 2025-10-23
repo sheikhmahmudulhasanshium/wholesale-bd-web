@@ -55,14 +55,17 @@ class ApiClient {
   private handleGlobalError(error: AxiosError<ApiErrorResponse>) {
     const { response, message } = error;
     if (response?.status === 401) {
-      toast.error('Session expired. Please log in again.');
-      if (typeof window !== 'undefined') {
+      // --- THE FIX IS HERE ---
+      // This logic now correctly handles expired sessions without trapping users in a redirect loop.
+      if (typeof window !== 'undefined' && localStorage.getItem('access_token')) {
+        toast.error('Your session has expired. Please log in again.');
         localStorage.removeItem('access_token');
-        if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-        }
+        // Instead of a hard redirect, we reload the page.
+        // This forces the AuthProvider to re-check authentication state and correctly
+        // update the UI for a logged-out user, solving the redirect loop.
+        window.location.reload(); 
       }
-      return;
+      return; // Stop further processing for 401 errors.
     }
     const errorData = response?.data;
     let errorMessage = 'An unexpected error occurred.';
@@ -103,23 +106,19 @@ class ApiClient {
     getAll: (params: ProductQuery, signal?: AbortSignal): Promise<{ data: PaginatedProductsResponse }> => 
       this.instance.get('/products', { params, signal }),
          
-    // ✅ 1. ADDED: Method to get a single product by its ID
     getById: (id: string, signal?: AbortSignal): Promise<{ data: Product }> =>
       this.instance.get(`/products/${id}`, { signal }),
 
-    // ✅ 2. ADDED: Method to update a product (expects FormData)
     update: (id: string, data: FormData): Promise<{ data: Product }> =>
       this.instance.patch(`/products/${id}`, data),
-    // ✅ ADDED: Admin delete method (soft delete as per your original backend code)
     delete: (id: string): Promise<void> => this.instance.delete(`/products/${id}`),
     
     getCategories: (): Promise<{ data: Category[] }> => this.instance.get('/categories'),
     getZones: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
   };
     zones = {
-    getAll: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
+    findAll: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
   };
-
 }
 
 const apiClient = new ApiClient();

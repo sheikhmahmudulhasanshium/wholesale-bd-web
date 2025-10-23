@@ -41,6 +41,8 @@ export interface Zone {
   name: string;
   code: string;
   description?: string;
+  isActive:boolean;
+  sortingOrder?: number;
 }
 
 export interface PricingTier {

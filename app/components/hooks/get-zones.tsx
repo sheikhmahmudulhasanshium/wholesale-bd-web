@@ -10,7 +10,7 @@ export function useZones() {
   useEffect(() => {
     let isMounted = true;
 
-    apiClient.zones.getAll()
+    apiClient.zones.findAll()
       .then(res => {
         if (isMounted) {
           setZones(res.data);
