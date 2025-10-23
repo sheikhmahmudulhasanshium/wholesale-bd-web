@@ -37,6 +37,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="google-site-verification" content="WRd30nYZYkPGTW-FtsbgzbgKSaB1d_bteLvzj-sA3YU" />
+      </head>
       {/* Apply the font variables to the body tag */}
       <body
         className={`${poppins.variable} ${geistMono.variable} antialiased font-sans`}

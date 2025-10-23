@@ -1,3 +1,5 @@
+// app/verify-email/page.tsx
+
 'use client';
 import React, { useState, Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -12,30 +14,35 @@ import { Input } from "@/components/ui/input";
 import apiClient from '@/lib/apiClient';
 import { Header } from '../login/header';
 import { BasicPageProvider } from '@/app/components/providers/basic-page-provider';
+
 const formSchema = z.object({
   otp: z.string().trim().min(6, { message: "OTP must be 6 digits." }).max(6),
 });
+
 function VerifyEmailComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
+
   useEffect(() => {
     if (!email) {
       toast.error("No email specified. Redirecting to register.");
       router.replace('/register');
     }
   }, [email, router]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { otp: "" },
   });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!email) return;
     setIsLoading(true);
     try {
-        await apiClient.auth.verifyEmail({ email, otp: values.otp });
+        await apiClient.auth.validateOtp({ email, otp: values.otp });
         toast.success("Email verified successfully!", {
             description: "Redirecting to the login page...",
         });
@@ -47,11 +54,12 @@ function VerifyEmailComponent() {
         setIsLoading(false);
     }
   }
+
   const handleResendCode = async () => {
     if (!email) return;
     setIsResending(true);
     try {
-        await apiClient.auth.resendVerification({ email });
+        await apiClient.auth.requestNewOtp({ email });
         toast.success("A new verification code has been sent to your email.");
     } catch (error) {
         // Error is handled by global interceptor
@@ -60,6 +68,7 @@ function VerifyEmailComponent() {
         setIsResending(false);
     }
   }
+
   if (!email) {
     return (
         <div className="flex min-h-screen w-full items-center justify-center">
@@ -67,6 +76,7 @@ function VerifyEmailComponent() {
         </div>
     );
   }
+
   return (
     <BasicPageProvider header={<Header/>} footer={null}>
         <div className="container mx-auto flex min-h-[calc(100vh-4rem)] items-center justify-center p-4">
@@ -116,6 +126,7 @@ function VerifyEmailComponent() {
     </BasicPageProvider>
   );
 }
+
 export default function VerifyEmailPage() {
     return (
         <Suspense fallback={

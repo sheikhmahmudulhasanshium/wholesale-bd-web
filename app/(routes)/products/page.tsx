@@ -1,25 +1,101 @@
-// app/(routes)/products/page.tsx
-"use client"; // Needs to be a client component to use BasicPageProvider and hooks
+import { Metadata } from "next";
+import HomeClient from "./body";
+import Body from "./body";
 
-import { Header } from "@/app/components/common/header";
-import Footer from "@/app/components/common/footer";
-import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
-import { NavMenu } from "@/app/components/common/navbar";
-import Sidebar from "@/app/components/common/sidebar";
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-// Note: A real implementation would fetch products using useProducts hook and render a grid.
-const ProductsClient = () => {
-  return (
-    <BasicPageProvider header={<Header />} footer={<Footer />} navbar={<NavMenu/>} sidebar={<Sidebar/>}>
-      <div className="container mx-auto p-4 md:p-8">
-        <h1 className="text-3xl font-bold mb-6">All Products</h1>
-        
-        <div className="min-h-[400px] flex items-center justify-center border border-dashed p-10 rounded-lg bg-secondary/30">
-          <p className="text-muted-foreground">Product listing content will be displayed here soon.</p>
-        </div>
-      </div>
-    </BasicPageProvider>
-  );
+  const title = "Products | Wholesale BD";
+  const description = 'Discover a wide range of products on Wholesale BD, the fastest-growing e-commerce platform for startups and small businesses.';
+  const imageUrl = `${baseUrl}/logo/logo.png`;
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title,
+    description,
+
+    openGraph: {
+      title,
+      description,
+      url: new URL("/products", baseUrl),
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: "Wholesale BD Logo",
+        },
+      ],
+      type: "website",
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+      site: "@WholesaleBD", // Replace with your Twitter handle
+      creator: "@WholesaleBD",
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+    },
+
+    alternates: {
+      canonical: "/products",
+      languages: {
+        "en-US": "/en",
+        "bn-BD": "/bn",
+      },
+    },
+  };
 }
 
-export default ProductsClient;
+export default function HomePage() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+  // JSON-LD structured data for Organization and WebSite
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "name": "Wholesale BD",
+        "url": `${baseUrl}/products`,
+        "logo": `${baseUrl}/logo/logo.png`,
+        "sameAs": [
+          "https://www.facebook.com/WholesaleBD",   // Update with your real URLs
+          "https://twitter.com/WholesaleBD",
+          "https://www.linkedin.com/company/wholesalebd"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "url": `${baseUrl}/products`,
+        "name": "Wholesale BD - Fastest Growing E-commerce for Startups & Small Businesses",
+        "description":
+          "Explore Wholesale BD, the fastest-growing platform offering top deals, products, and features tailored for startups and small businesses.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Wholesale BD",
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${baseUrl}/logo/logo.png`,
+          }
+        }
+      }
+    ],
+  };
+
+  return (
+    <>
+      <Body />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+    </>
+  );
+}

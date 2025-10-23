@@ -1,4 +1,4 @@
-// FILE: @/lib/apiClient.ts
+// @/lib/apiClient.ts
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
@@ -85,15 +85,15 @@ class ApiClient {
       this.instance.post('/auth/register', data),
     login: (data: Record<string, unknown>): Promise<{ data: AuthResponse }> =>
       this.instance.post('/auth/login', data),
-    getProfile: (): Promise<{ data: { success: boolean, data: User } }> =>
+    getProfile: (): Promise<{ data: User }> =>
       this.instance.get('/auth/profile'),
-    verifyEmail: (data: { email: string; otp: string }) =>
+    validateOtp: (data: { email: string; otp: string }) =>
+      this.instance.post('/auth/validate-otp', data),
+    requestNewOtp: (data: { email: string }) =>
       this.instance.post('/auth/verify-email', data),
-    resendVerification: (data: { email: string }) =>
-      this.instance.post('/auth/resend-verification', data),
     forgotPassword: (data: { email: string }): Promise<{data: {message: string}}> =>
       this.instance.post('/auth/forgot-password', data),
-    resetPassword: (data: { email: string; otp: string; newPassword: string }) =>
+    resetPassword: (data: { token: string; newPassword: string }) =>
       this.instance.post('/auth/reset-password', data),
   };
 

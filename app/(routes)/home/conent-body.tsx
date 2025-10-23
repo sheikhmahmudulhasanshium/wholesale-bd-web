@@ -51,6 +51,12 @@ export const headlines = [
     bn: "এলাকাসমূহ",
     Icon: MapPin,
   },
+  {
+    key: "all",
+    en: "All Products",
+    bn: "সকল পণ্য",
+    Icon: Layers,
+  }
 ];
 
 interface ContentMenuProps {
@@ -63,7 +69,8 @@ interface ContentMenuProps {
     | "new"
     | "toprated"
     | "categories"
-    | "zone";
+    | "zone"
+    | "all";
   content?: React.ReactNode;
 }
 

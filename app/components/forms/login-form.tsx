@@ -1,3 +1,5 @@
+// components/forms/login-form.tsx
+
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
@@ -15,17 +17,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {  Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { translations } from "@/lib/data";
 import { useLanguage } from "../contexts/language-context";
 import apiClient from "@/lib/apiClient";
 import { useAuth } from "../contexts/auth-context";
-import { SignInWithGoogleButton } from "../auth/googleSignIn";
+import { SignInWithGoogleButton } from "../common/buttons/google-sign-in-button";
+
 const createFormSchema = (t: typeof translations.en) =>
   z.object({
     email: z.string().trim().email({ message: t.invalidEmail }),
     password: z.string().trim().min(1, { message: "Password is required." }),
   });
+
 export function LoginForm() {
   const { language } = useLanguage();
   const t = translations[language];
@@ -33,16 +37,18 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const formSchema = createFormSchema(t);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
       const response = await apiClient.auth.login(values);
       toast.success("Login successful! Redirecting...");
-      login(response.data.access_token, response.data.user);
+      login(response.data.token, response.data.user);
     } catch (error) {
       form.setError("root", {
         type: "manual",
@@ -53,15 +59,9 @@ export function LoginForm() {
       setIsLoading(false);
     }
   }
-  const handleGoogleLogin = () => {
-    toast.info("Google Sign-In is currently unavailable.");
-  };
+
   return (
     <div className="space-y-6">
-      {/* <Button variant="outline" className="w-full" disabled={true} onClick={handleGoogleLogin}>
-                <Chrome className="mr-2 h-4 w-4" />
-                {t.loginWithGoogle}
-            </Button> */}
       <SignInWithGoogleButton />
       <div className="relative">
         <div className="absolute inset-0 flex items-center">

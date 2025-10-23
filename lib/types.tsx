@@ -1,3 +1,5 @@
+// @/lib/types.ts
+
 import type { Metadata } from 'next';
 
 // --- Auth & User Types ---
@@ -13,7 +15,7 @@ export interface User {
 }
 
 export interface AuthResponse {
-  access_token: string;
+  token: string; // CHANGED from access_token
   user: User;
 }
 
