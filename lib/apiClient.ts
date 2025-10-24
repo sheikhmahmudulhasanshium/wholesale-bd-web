@@ -11,6 +11,7 @@ import {
   ProductQuery,
   Product
 } from './types';
+import { Collection } from '@/app/components/hooks/use-collections';
 
 interface ApiErrorResponse {
   message: string | string[];
@@ -119,6 +120,11 @@ class ApiClient {
     zones = {
     findAll: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
   };
+   // +++ START OF ADDITION +++
+  collections = {
+    findAllPublic: (): Promise<{ data: Collection[] }> => this.instance.get('/collections'),
+  };
+  // +++ END OF ADDITION +++
 }
 
 const apiClient = new ApiClient();

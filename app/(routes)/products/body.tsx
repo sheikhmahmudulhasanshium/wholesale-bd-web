@@ -29,8 +29,8 @@ const Body = () => {
         <BasicPageProvider header={<Header/>} footer={<Footer/>} navbar={null} sidebar={null}>
             
         <main className="flex flex-col items-center justify-start py-6 bg-accent text-foreground relative">
-                <ContentMenu language={language} variant="banner" />
-                <ContentMenu language={language} variant="all" />
+                <ContentMenu language={language} id={""} title={""}  />
+                <ContentMenu language={language} id={""} title={""} />
                 {showTopButton && (
           <button
             type="button"
