@@ -31,10 +31,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         console.log(`[Metadata Fetch] Success! Product Name: ${product?.name}`);
     } else {
         // Log an error if the response was not successful
-        console.error(`[Metadata Fetch] Failed to fetch. Status: ${response.status}`);
+        console.log(`[Metadata Fetch] Failed to fetch. Status: ${response.status}`);
     }
   } catch (error) {
-    console.error(`[Metadata Fetch] A critical error occurred:`, error);
+    console.log(`[Metadata Fetch] A critical error occurred:`, error);
   }
   // --- ^^^^^^^ THIS IS THE UPDATED FETCH BLOCK ^^^^^^^ ---
 
