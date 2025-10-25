@@ -1,0 +1,12 @@
+# Block all crawlers from user-specific and non-public pages
+User-agent: *
+Disallow: /login
+Disallow: /register
+Disallow: /cart
+Disallow: /users/
+
+# Allow all other content
+Allow: /
+
+# Location of the sitemap file
+Sitemap: https://wholesale-bd-web-app.vercel.app/sitemap.xml
