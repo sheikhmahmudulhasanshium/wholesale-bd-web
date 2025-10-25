@@ -3,8 +3,9 @@
 import { MetadataRoute } from 'next';
 import axios from 'axios';
 
-// --- A simple Product type for the sitemap ---
+// --- Update the Product type to include _id ---
 type Product = {
+  _id: string; // We need the ID to build the URL
   name: string;
   updatedAt: string;
 };
@@ -20,14 +21,8 @@ async function fetchAllPublicProducts(): Promise<Product[]> {
     const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/products/public/all`;
     console.log(`Sitemap: Fetching products from ${apiUrl}`);
 
-    // Create a plain axios instance for this task.
-    // The type hint <Product[]> tells axios to expect a direct array.
     const response = await axios.get<Product[]>(apiUrl);
-
-    // === THIS IS THE FIX ===
-    // Since the API returns a direct array, response.data IS the array.
     const products = response.data;
-    // ======================
 
     if (Array.isArray(products)) {
       console.log(`Sitemap: Successfully fetched ${products.length} products.`);
@@ -42,7 +37,7 @@ async function fetchAllPublicProducts(): Promise<Product[]> {
     } else {
         console.error("Sitemap Error: An unexpected error occurred.", error);
     }
-    return []; // Return an empty array on failure so the build succeeds.
+    return [];
   }
 }
 
@@ -60,13 +55,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'daily' as const,
   }));
 
-  // Directly call our local fetcher function
   const allProducts = await fetchAllPublicProducts();
 
   const productsUrls = allProducts.map((product) => {
-    const slug = encodeURIComponent(product.name);
+    // === THIS IS THE ONLY LINE THAT CHANGED ===
+    // We are now using product._id instead of product.name for the URL.
     return {
-      url: `${baseUrl}/products/${slug}`, // Ensure this URL structure is correct
+      url: `${baseUrl}/products/${product._id}`,
       lastModified: new Date(product.updatedAt).toISOString(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
