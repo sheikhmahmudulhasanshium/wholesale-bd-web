@@ -14,7 +14,7 @@ export default function NotFound() {
         <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
         <h1 className="text-4xl font-bold tracking-tight">404 - Page Not Found</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Sorry, we couldn't find the page you were looking for.
+          Sorry, we couldn&apos;t find the page you were looking for.
         </p>
         <div className="mt-6 flex gap-4">
             <Button asChild>

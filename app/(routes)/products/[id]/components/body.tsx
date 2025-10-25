@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import { Product } from "@/lib/types";
 import Image from "next/image";
+import { AxiosError } from "axios"; // Importing AxiosError for better error typing
 
 interface BodyProps {
   id: string;
@@ -61,7 +62,7 @@ const ProductDetails = ({ product }: { product: Product }) => {
           <CardContent className="p-0">
             <div className="aspect-square bg-muted flex items-center justify-center">
               {product.images && product.images.length > 0 ? (
-                <img
+                <Image
                   src={product.images[0]}
                   alt={product.name}
                   className="object-contain w-full h-full"
@@ -121,19 +122,21 @@ const ProductDetails = ({ product }: { product: Product }) => {
 export default function ProductBody({ id }: BodyProps) {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);  // We can now use a string type for the error
 
   useEffect(() => {
+    const abortController = new AbortController();  // Declare the abortController here
     const fetchProduct = async () => {
-      const abortController = new AbortController();
       try {
         setIsLoading(true);
         setError(null);
         const response = await apiClient.products.getByIdPublic(id, abortController.signal);
         setProduct(response.data);
-      } catch (err: any) {
-        if (err.name !== "CanceledError") {
-          setError(err);
+      } catch (err) {
+        if (err instanceof AxiosError) {  // Checking if the error is an AxiosError
+          setError(err.response?.data?.message || "An error occurred while fetching the product.");
+        } else {
+          setError("An unexpected error occurred.");
         }
       } finally {
         setIsLoading(false);
@@ -144,8 +147,8 @@ export default function ProductBody({ id }: BodyProps) {
       fetchProduct();
     }
 
+    // Cleanup function to abort the request on component unmount
     return () => {
-      const abortController = new AbortController();
       abortController.abort();
     };
   }, [id]);
@@ -175,8 +178,7 @@ export default function ProductBody({ id }: BodyProps) {
               Product Not Found
             </CardTitle>
             <CardDescription>
-              The product you’re looking for doesn’t exist or has been removed.
-              Please verify the ID or explore our available products below.
+              {error || "The product you&apos;re looking for doesn&apos;t exist or has been removed."}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex gap-3 mt-4">
