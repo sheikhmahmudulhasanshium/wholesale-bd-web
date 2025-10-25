@@ -1,8 +1,8 @@
-
 // app/(routes)/products/[id]/components/body.tsx
 "use client";
 
-import { useProduct } from "@/app/components/hooks/get-product";
+import { useEffect, useState } from "react"; // --- ADDED: useEffect and useState for direct data fetching ---
+import apiClient from "@/lib/apiClient"; // --- ADDED: apiClient for the public API call ---
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 import { Header } from "@/app/components/common/header";
 import Footer from "@/app/components/common/footer";
@@ -117,7 +117,42 @@ const ProductDetails = ({ product }: { product: Product }) => {
 }
 
 export default function ProductBody({ id }: BodyProps) {
-  const { data: product, isLoading, error } = useProduct(id);
+  // --- vvvvvvv THIS IS THE UPDATED SECTION vvvvvvv ---
+  // Replaced the protected useProduct hook with direct public data fetching.
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      // Use an abort controller for cleanup
+      const abortController = new AbortController();
+      try {
+        setIsLoading(true);
+        setError(null);
+        // Using the PUBLIC endpoint to fetch the product
+        const response = await apiClient.products.getByIdPublic(id, abortController.signal);
+        setProduct(response.data);
+      } catch (err: any) {
+        if (err.name !== 'CanceledError') {
+          setError(err);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+    
+    // Cleanup function to cancel the request if the component unmounts
+    return () => {
+      const abortController = new AbortController();
+      abortController.abort();
+    };
+  }, [id]);
+  // --- ^^^^^^^ THIS IS THE UPDATED SECTION ^^^^^^^ ---
 
   const renderContent = () => {
     if (isLoading) {
