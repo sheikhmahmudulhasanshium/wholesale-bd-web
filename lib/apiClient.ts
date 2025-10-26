@@ -107,19 +107,24 @@ class ApiClient {
     getAll: (params: ProductQuery, signal?: AbortSignal): Promise<{ data: PaginatedProductsResponse }> => 
       this.instance.get('/products', { params, signal }),
     
-    // +++ START OF ADDITION +++
     getAllPublic: (signal?: AbortSignal): Promise<{ data: Product[] }> => 
       this.instance.get('/products/public/all', { signal }),
-    // +++ END OF ADDITION +++
          
     getById: (id: string, signal?: AbortSignal): Promise<{ data: Product }> =>
       this.instance.get(`/products/${id}`, { signal }),
 
-    // +++ START OF ADDITION +++
     getByIdPublic: (id: string, signal?: AbortSignal): Promise<{ data: Product }> =>
       this.instance.get(`/products/public/find/${id}`, { signal }),
-    // +++ END OF ADDITION +++
 
+    getByCategoryIdPublic: (categoryId: string, signal?: AbortSignal): Promise<{ data: Product[] }> =>
+      this.instance.get(`/products/public/category/${categoryId}`, { signal }),
+
+    getByZoneIdPublic: (zoneId: string, signal?: AbortSignal): Promise<{ data: Product[] }> =>
+      this.instance.get(`/products/public/zone/${zoneId}`, { signal }),
+
+    getBySellerIdPublic: (sellerId: string, signal?: AbortSignal): Promise<{ data: Product[] }> =>
+      this.instance.get(`/products/public/seller/${sellerId}`, { signal }),
+    
     update: (id: string, data: FormData): Promise<{ data: Product }> =>
       this.instance.patch(`/products/${id}`, data),
     delete: (id: string): Promise<void> => this.instance.delete(`/products/${id}`),

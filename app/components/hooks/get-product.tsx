@@ -21,7 +21,8 @@ export const useProduct = (productId: string | null) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await apiClient.products.getById(productId, controller.signal);
+        // --- FIX: Use the public endpoint method ---
+        const response = await apiClient.products.getByIdPublic(productId, controller.signal);
         setData(response.data);
       } catch (err) {
         if (!axios.isCancel(err)) {

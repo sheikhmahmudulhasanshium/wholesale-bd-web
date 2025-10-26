@@ -1,14 +1,14 @@
-// FILE: @/app/components/hooks/use-products.tsx
-
 "use client";
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
-import { ProductQuery, PaginatedProductsResponse } from '@/lib/types';
+// --- FIX: Import Product type, remove unused Paginated types ---
+import { Product, ProductQuery } from '@/lib/types'; 
 import axios from 'axios';
 
 export const useProducts = (filters: ProductQuery) => {
-  const [data, setData] = useState<PaginatedProductsResponse | null>(null);
+  // --- FIX: The data is now a simple array of Products ---
+  const [data, setData] = useState<Product[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -19,7 +19,10 @@ export const useProducts = (filters: ProductQuery) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await apiClient.products.getAll(filters, controller.signal);
+        // --- FIX: Call the public endpoint that returns a simple array ---
+        // Note: The 'filters' object will be ignored by this specific endpoint,
+        // but we leave it for potential future backend enhancements.
+        const response = await apiClient.products.getAllPublic(controller.signal);
         setData(response.data);
       } catch (err) {
         if (axios.isCancel(err)) {
@@ -37,10 +40,9 @@ export const useProducts = (filters: ProductQuery) => {
     return () => {
       controller.abort();
     };
-    // FIX: Suppress linting for this line as using JSON.stringify is intentional for deep equality checking
-    // Using the raw 'filters' object here might lead to infinite loops if the object reference changes on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(filters)]);
 
+  // --- FIX: The returned data is now Product[] | null ---
   return { data, isLoading, error };
 };

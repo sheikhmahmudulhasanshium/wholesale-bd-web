@@ -89,7 +89,7 @@ const ProductDetails = ({ product }: { product: Product }) => {
               <p className="text-lg">{product.description}</p>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                Shipping from: {product.zoneId.name}
+                Shipping from: {product.zoneId}
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <PackageIcon className="h-4 w-4" />
@@ -99,17 +99,17 @@ const ProductDetails = ({ product }: { product: Product }) => {
             </CardContent>
           </Card>
 
-          {/* Seller Info */}
+          {/* Seller Info needs refinements */}
           <Card>
             <CardHeader className="py-4">
               <CardTitle>Seller Information</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <p>
-                {product.sellerId ? product.sellerId.businessName : "General Seller"}
+                {product.sellerId ? product.sellerId : "General Seller"}
               </p>
               <p className="text-sm text-muted-foreground">
-                Location: {product.zoneId.name}
+                Location: {product.zoneId}
               </p>
             </CardContent>
           </Card>

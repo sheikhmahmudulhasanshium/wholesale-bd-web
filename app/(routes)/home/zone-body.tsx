@@ -68,7 +68,7 @@ const ZoneBody = () => {
         </div>
       )}
 
-      {hasZoneSelected && productData.data?.products?.length === 0 && (
+      {hasZoneSelected && productData.data?.length === 0 && (
         <div className="text-center text-muted-foreground">
           No products found for the selected zone.
         </div>

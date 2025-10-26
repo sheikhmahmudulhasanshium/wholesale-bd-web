@@ -35,34 +35,6 @@ export interface PricingTier {
 }
 
 // THIS IS THE COMPLETE AND ACCURATE PRODUCT TYPE
-export interface Product {
-  _id: string;
-  name: string;
-  name_bn?: string;
-  description: string;
-  images?: ProductImage[]|string[]|undefined; // This must be ProductImage[] to match your data
-  categoryId: string;
-  zoneId: string;
-  sellerId: string;
-  pricingTiers: PricingTier[];
-  minimumOrderQuantity: number;
-  stockQuantity: number;
-  unit: string;
-  brand: string;
-  model: string;
-  specifications: string;
-  status: string;
-  viewCount: number;
-  orderCount: number;
-  rating: number;
-  reviewCount: number;
-  sku: string;
-  weight: number;
-  dimensions: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export interface CollectionProduct {
   product: Product;
@@ -82,7 +54,7 @@ export interface Collection {
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
-import { User } from '@/lib/types';
+import { Product, User } from '@/lib/types';
 // The 'User' type was imported but not used. It can be removed.
 
 // --- THIS IS THE FIX ---

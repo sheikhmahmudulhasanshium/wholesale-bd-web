@@ -5,8 +5,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton'; // Used for the image placeholder
-import { Product } from '@/app/components/hooks/use-collections';
 import Image from 'next/image';
+import { Product } from '@/lib/types';
 
 interface ProductCardProps {
   product: Product;

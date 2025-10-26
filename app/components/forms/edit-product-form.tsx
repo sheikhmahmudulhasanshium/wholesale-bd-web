@@ -75,8 +75,8 @@ export function EditProductForm({ initialData }: EditProductFormProps) {
     defaultValues: {
       name: initialData.name || "",
       description: initialData.description || "",
-      categoryId: initialData.categoryId._id || "",
-      zoneId: initialData.zoneId._id || "",
+      //categoryId: initialData.categoryId._id || "",
+      //zoneId: initialData.zoneId._id || "",
       minimumOrderQuantity: String(initialData.minimumOrderQuantity || 1),
       stockQuantity: String(initialData.stockQuantity || 0),
       unit: initialData.unit || "",

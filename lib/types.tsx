@@ -55,11 +55,12 @@ export interface PricingTier {
 export interface Product {
   _id: string;
   name: string;
+  name_bn?:string
   description: string;
-  images: string[];
-  sellerId: Seller;
-  categoryId: Category;
-  zoneId: Zone;
+  images?: string[];
+  sellerId: string;
+  categoryId: string;
+  zoneId: string;
   pricingTiers: PricingTier[];
   stockQuantity: number;
   minimumOrderQuantity: number;
