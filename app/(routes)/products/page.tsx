@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import HomeClient from "./body";
 import Body from "./body";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -53,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function HomePage() {
+export default function ProductsPage() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   // JSON-LD structured data for Organization and WebSite

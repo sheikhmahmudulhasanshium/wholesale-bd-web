@@ -9,7 +9,9 @@ import {
   Zone, 
   PaginatedProductsResponse, 
   ProductQuery,
-  Product
+  Product,
+  // --- ADDED NEW TYPES ---
+  GroupedMedia
 } from './types';
 import { Collection } from '@/app/components/hooks/use-collections';
 
@@ -56,17 +58,12 @@ class ApiClient {
   private handleGlobalError(error: AxiosError<ApiErrorResponse>) {
     const { response, message } = error;
     if (response?.status === 401) {
-      // --- THE FIX IS HERE ---
-      // This logic now correctly handles expired sessions without trapping users in a redirect loop.
       if (typeof window !== 'undefined' && localStorage.getItem('access_token')) {
         toast.error('Your session has expired. Please log in again.');
         localStorage.removeItem('access_token');
-        // Instead of a hard redirect, we reload the page.
-        // This forces the AuthProvider to re-check authentication state and correctly
-        // update the UI for a logged-out user, solving the redirect loop.
         window.location.reload(); 
       }
-      return; // Stop further processing for 401 errors.
+      return;
     }
     const errorData = response?.data;
     let errorMessage = 'An unexpected error occurred.';
@@ -132,14 +129,20 @@ class ApiClient {
     getCategories: (): Promise<{ data: Category[] }> => this.instance.get('/categories'),
     getZones: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
   };
-    zones = {
+
+  zones = {
     findAll: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
   };
-   // +++ START OF ADDITION +++
+
   collections = {
     findAllPublic: (): Promise<{ data: Collection[] }> => this.instance.get('/collections'),
   };
-  // +++ END OF ADDITION +++
+  
+  // --- NEW: UPLOADS OBJECT ---
+  uploads = {
+    getMediaForEntity: (entityModel: 'Product' | 'User', entityId: string, signal?: AbortSignal): Promise<{ data: GroupedMedia }> =>
+      this.instance.get(`/uploads/by/${entityModel}/${entityId}`, { signal }),
+  };
 }
 
 const apiClient = new ApiClient();

@@ -2,39 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
-import { Product } from '@/lib/types';
+import { GroupedMedia } from '@/lib/types';
 import axios from 'axios';
 
-export const useProduct = (productId: string | null) => {
-  const [data, setData] = useState<Product | null>(null);
-  // Default to true, we are always loading until we have an ID and a result.
+/**
+ * Fetches all media (images, videos, links) associated with a specific product ID.
+ * @param productId The ID of the product.
+ * @returns An object containing the media data, loading state, and any errors.
+ */
+export const useProductMedia = (productId: string | null) => {
+  const [data, setData] = useState<GroupedMedia | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); 
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     // If we don't have a product ID yet, just wait.
-    // The component will continue showing the loading state as intended.
     if (!productId) {
       return;
     }
 
     const controller = new AbortController();
     const fetchData = async () => {
-      // Explicitly set loading to true when a fetch starts. This handles
-      // navigation between different product pages correctly.
       setIsLoading(true);
       setError(null);
       setData(null);
 
       try {
-        const response = await apiClient.products.getByIdPublic(productId, controller.signal);
+        const response = await apiClient.uploads.getMediaForEntity('Product', productId, controller.signal);
         setData(response.data);
       } catch (err) {
         if (!axios.isCancel(err)) {
           setError(err as Error);
         }
       } finally {
-        // This is the ONLY point where loading should be set to false.
         setIsLoading(false);
       }
     };

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import * as Icons from "lucide-react";
-import { ArrowUp, Package, PackageSearch, Tag, Globe, LayoutGrid, MapPin, Shapes, Sparkles, HelpCircle, LucideIcon, ChevronDown, Menu } from "lucide-react";
+import { ArrowUp, Package, PackageSearch, Tag, Globe, LayoutGrid, MapPin, Shapes, Sparkles, HelpCircle, LucideIcon, ChevronDown, Menu, ListIcon, Radar, BoxesIcon } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,7 +15,7 @@ import Footer from "@/app/components/common/footer";
 import { Header } from "@/app/components/common/header";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 import apiClient from "@/lib/apiClient";
-import { Category, Product, Zone,  } from "@/lib/types";
+import { Category, Product, Zone } from "@/lib/types";
 import { useProductsByCriteria } from "@/app/components/hooks/get-products-by-criteria";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import CountdownTimer from "@/app/(routes)/home/count-down-timer";
@@ -84,6 +84,12 @@ const Body = () => {
   const [zones, setZones] = useState<Zone[] | null>(null);
   const [collections, setCollections] = useState<Collection[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false); // State to fix hydration mismatch
+
+  // Set mounted state on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -109,12 +115,31 @@ const Body = () => {
   
   // --- NAVBAR DEFINITION ---
   const productsNavbar = (
-    <div className="w-full flex justify-center px-2 sm:px-4 bg-background border-b overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="w-full max-w-2xl flex-nowrap flex justify-start sm:justify-center items-center p-1 my-2 space-x-1 bg-muted rounded-full">
-        <button onClick={() => setView('all')} className={cn("w-full flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors", view === 'all' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}><LayoutGrid className="h-4 w-4" />All</button>
-        <button onClick={() => setView('category')} className={cn("w-full flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors", view === 'category' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}><Shapes className="h-4 w-4" />Categories</button>
-        <button onClick={() => setView('zone')} className={cn("w-full flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors", view === 'zone' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}><MapPin className="h-4 w-4" />Zones</button>
-        <button onClick={() => setView('collection')} className={cn("w-full flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors", view === 'collection' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}><Sparkles className="h-4 w-4" />Collections</button>
+    <div className="sticky top-[56px] md:top-[60px] z-30 w-full bg-background/80 backdrop-blur-sm border-b">
+      <div className="w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="w-full max-w-2xl mx-auto flex justify-start sm:justify-center items-center p-1 my-2 space-x-2">
+          {[
+            { key: 'all', label: 'All', icon: LayoutGrid },
+            { key: 'category', label: 'Categories', icon: Shapes },
+            { key: 'zone', label: 'Zones', icon: MapPin },
+            { key: 'collection', label: 'Collections', icon: Sparkles }
+          ].map(item => (
+            <Button
+              key={item.key}
+              variant="ghost"
+              onClick={() => setView(item.key as ProductView)}
+              className={cn(
+                "flex-shrink-0 justify-center gap-2 px-4 h-10 rounded-full font-semibold transition-colors whitespace-nowrap",
+                view === item.key
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -126,23 +151,14 @@ const Body = () => {
         <Button variant="outline" size="icon"><Menu className="h-6 w-6" /><span className="sr-only">Open Page Navigation</span></Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-full max-w-xs sm:max-w-sm p-0 flex flex-col">
-        {/* === START OF THE FIX === */}
-        <SheetHeader className="p-4 border-b text-left">
-          <SheetTitle asChild>
-             {/* The Logo is now the main element, wrapped in a Link */}
-             <Link href="/" onClick={() => setIsSidebarOpen(false)} className="inline-block">
-               <Image src={'/logo/logo.svg'} alt="Wholesale BD Logo" width={200} height={100} className="w-auto h-20" priority />
-             </Link>
-          </SheetTitle>
-          {/* The description is now visible and provides context */}
-          <SheetDescription>
-            Select Menu
-          </SheetDescription>
+        {/* Reverted to your requested structure to avoid changing inputs */}
+        <SheetHeader className="p-4 border-b">
+            <SheetTitle><Image src={'/logo/logo.svg'} alt="Menu" height={100} width={200}/></SheetTitle>
         </SheetHeader>
-        {/* === END OF THE FIX === */}
+        <SheetDescription className="pl-4">Select Menu</SheetDescription>
         <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-4">
           <div>
-            <div className="px-3 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">Categories</div>
+            <div className="px-3 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center-safe gap-2"><ListIcon className="h-6 w-6"/> <h3 className="text-base">Categories</h3></div>
             {isLoading ? <Skeleton className="h-32 w-full" /> : categories?.map((cat) => (
               <Link key={cat._id} href={`#${slugify('category', cat.name)}`} onClick={() => { setView('category'); setIsSidebarOpen(false); }} className="block">
                 <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Tag className="h-5 w-5 text-muted-foreground"/>{cat.name}</Button>
@@ -150,7 +166,7 @@ const Body = () => {
             ))}
           </div>
           <div>
-            <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t">Zones</div>
+            <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t flex items-center-safe gap-2"><Radar className="h-6 w-6"/><h3 className="text-base">Zones</h3></div>
             {isLoading ? <Skeleton className="h-24 w-full" /> : zones?.map((zone) => (
               <Link key={zone._id} href={`#${slugify('zone', zone.name)}`} onClick={() => { setView('zone'); setIsSidebarOpen(false); }} className="block">
                 <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Globe className="h-5 w-5 text-muted-foreground"/>{zone.name}</Button>
@@ -158,7 +174,7 @@ const Body = () => {
             ))}
           </div>
           <div>
-            <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t">Collections</div>
+            <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t flex items-center gap-2"><BoxesIcon className="h-6 w-6"/><h3 className="text-base">Collections</h3></div>
             {isLoading ? <Skeleton className="h-24 w-full" /> : collections?.map((collection) => (
               <Link key={collection._id} href={`#${slugify('collection', collection.url)}`} onClick={() => { setView('collection'); setIsSidebarOpen(false); }} className="block">
                 <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Sparkles className="h-5 w-5 text-muted-foreground"/>{language === 'bn' ? collection.title_bn : collection.title}</Button>
@@ -171,7 +187,8 @@ const Body = () => {
   );
 
   return ( 
-    <BasicPageProvider header={<Header/>} footer={<Footer/>} navbar={productsNavbar} sidebar={productsSidebar}>
+    // Use the isMounted state to conditionally render the sidebar
+    <BasicPageProvider header={<Header/>} footer={<Footer/>} navbar={productsNavbar} sidebar={isMounted ? productsSidebar : null}>
       <main className="flex flex-col items-center justify-start py-6 sm:py-8 px-4 bg-background text-foreground relative">
         <div className="w-full max-w-7xl mb-8 text-center"><h1 className="flex items-center justify-center gap-4 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter"><Package className="h-8 sm:h-10 w-8 sm:w-10" />Our Products</h1><p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-sm sm:text-base">Explore a wide range of quality products, perfectly organized for your convenience.</p></div>
         <div className="w-full">
