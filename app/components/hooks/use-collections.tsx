@@ -1,66 +1,7 @@
-"use client";
-
-// @/lib/types.ts
-
-// --- Basic User & Auth Types ---
-
-
-export interface AuthResponse {
-  access_token: string;
-  user: User;
-}
-
-// --- Basic App Data Types ---
-export interface Category {
-  _id: string;
-  name: string;
-}
-
-export interface Zone {
-  _id: string;
-  name: { en: string; bn: string };
-}
-
-// --- Product & Collection Types ---
-
-export interface ProductImage {
-  url: string;
-  public_id: string;
-}
-
-export interface PricingTier {
-  minQuantity: number;
-  maxQuantity?: number;
-  pricePerUnit: number;
-}
-
-// THIS IS THE COMPLETE AND ACCURATE PRODUCT TYPE
-
-export interface CollectionProduct {
-  product: Product;
-  priority: number;
-}
-
-export interface Collection {
-  _id:string;
-  title: string;
-  title_bn: string;
-  url: string;
-  lucide_react_icon?: string;
-  end_date?: string;
-  products: CollectionProduct[];
-}
-// @/app/components/hooks/use-collections.ts
-
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
-import { Product, User } from '@/lib/types';
-// The 'User' type was imported but not used. It can be removed.
+import { Collection } from '@/lib/types';
 
-// --- THIS IS THE FIX ---
-// Import the Collection type from your single source of truth (Done above)
-
-// Define the return type for the hook
 export interface UseCollectionsReturn {
   collections: Collection[] | null;
   isLoading: boolean;
@@ -78,9 +19,7 @@ export function useCollections(): UseCollectionsReturn {
       try {
         const response = await apiClient.collections.findAllPublic();
         setCollections(response.data);
-      } catch (err) { // `err` is of type `unknown` by default
-        // FIX: Check if the caught object is an instance of Error.
-        // If not, create a new Error object to ensure type safety for the state.
+      } catch (err) {
         if (err instanceof Error) {
           setError(err);
         } else {
@@ -97,3 +36,4 @@ export function useCollections(): UseCollectionsReturn {
 
   return { collections, isLoading, error };
 }
+

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ProductCard } from './product-card';
-import { CollectionProduct } from '@/app/components/hooks/use-collections';
+import { CollectionProduct } from '@/lib/types';
 
 interface ProductGridProps {
   products: CollectionProduct[];

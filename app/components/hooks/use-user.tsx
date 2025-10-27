@@ -2,17 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
-import { User } from '@/lib/types';
+import { PublicUserProfile } from '@/lib/types';
 import axios from 'axios';
 
 export const useUser = (userId: string | null) => {
-  const [data, setData] = useState<User | null>(null);
+  const [data, setData] = useState<PublicUserProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); 
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!userId) {
       setIsLoading(false);
+      setData(null);
       return;
     }
 
@@ -23,12 +24,11 @@ export const useUser = (userId: string | null) => {
       setData(null);
 
       try {
-        // Calling the protected endpoint. This may fail if not logged in.
-        const response = await apiClient.users.getById(userId, controller.signal);
+        const response = await apiClient.users.getPublicProfileById(userId, controller.signal);
         setData(response.data);
       } catch (err) {
         if (!axios.isCancel(err)) {
-          console.error(`Failed to fetch user ${userId}. A public endpoint may be needed, or the user must be logged in.`, err);
+          console.error(`Failed to fetch user ${userId}.`, err);
           setError(err as Error);
         }
       } finally {

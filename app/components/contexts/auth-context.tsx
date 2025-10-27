@@ -5,13 +5,13 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter } from 'next/navigation';
 import apiClient  from '@/lib/apiClient';
 import { toast } from 'sonner';
-import { User } from '@/lib/types';
+import { AuthenticatedUser } from '@/lib/types';
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthenticatedUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, userData: User) => void;
+  login: (token: string, userData: AuthenticatedUser) => void;
   logout: () => void;
   checkLoggedInUser: () => Promise<void>;
 }
@@ -19,7 +19,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkLoggedInUser();
   }, [checkLoggedInUser]);
 
-  const login = (token: string, userData: User) => {
+  const login = (token: string, userData: AuthenticatedUser) => {
     localStorage.setItem('access_token', token);
     setUser(userData);
     router.push('/products');

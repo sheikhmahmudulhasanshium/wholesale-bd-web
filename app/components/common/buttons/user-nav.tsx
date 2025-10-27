@@ -1,4 +1,5 @@
 "use client";
+
 import { LogOut, User as UserIcon, ShieldCheck, Mail, LayoutDashboardIcon } from "lucide-react";
 import { useAuth } from "@/app/components/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,27 +13,39 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { useMyPublicProfile } from "../../hooks/use-my-public-profile";
+
 export function UserNav() {
-  const { user, logout } = useAuth();
-  if (!user) {
+  const { user, logout, isLoading: isAuthLoading } = useAuth();
+  const { publicProfile, isLoading: isProfileLoading } = useMyPublicProfile();
+
+  // If auth is still loading or the user is not authenticated, show nothing.
+  if (isAuthLoading || !user) {
     return null;
   }
+
   const fullName = `${user.firstName} ${user.lastName}`;
+  const getInitials = (firstName?: string, lastName?: string) => `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={user.profilePicture} alt={fullName} />
-            <AvatarFallback>
-              {user.role === 'admin' ? (
-                <ShieldCheck className="h-5 w-5" />
-              ) : (
-                <Mail className="h-5 w-5" />
-              )}
-            </AvatarFallback>
-          </Avatar>
+          {isProfileLoading ? (
+            <Skeleton className="h-9 w-9 rounded-full" />
+          ) : (
+            <Avatar className="h-9 w-9">
+              <AvatarImage 
+                src={publicProfile?.profilePicture ?? undefined} 
+                alt={fullName} 
+              />
+              <AvatarFallback>
+                {getInitials(user.firstName, user.lastName)}
+              </AvatarFallback>
+            </Avatar>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -46,7 +59,6 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href="/dashboard">

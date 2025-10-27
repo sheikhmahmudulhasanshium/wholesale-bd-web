@@ -13,7 +13,8 @@ import apiClient from "@/lib/apiClient";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 import { Header } from "@/app/components/common/header";
 import Footer from "@/app/components/common/footer";
-import { Product, Zone, Media, User } from "@/lib/types";
+// --- FIX: Removed 'User' as it's no longer an exported type ---
+import { Product, Zone, Media } from "@/lib/types";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,12 +92,21 @@ const ProductInfoSections = ({ product, links }: { product: Product, links?: Med
     </div>
 );
 
+// --- vvvvvvv THIS ENTIRE COMPONENT IS CORRECTED vvvvvvv ---
 const SellerInfoCard = ({ sellerId }: { sellerId: string }) => {
-  const { data: seller, isLoading: isSellerLoading } = useUser(sellerId);
-  const { data: media, isLoading: isMediaLoading } = useProductMedia(sellerId, 'User');
-  const isLoading = isSellerLoading || isMediaLoading;
-  const profilePicture = media?.images?.[0]?.url;
-  const getInitials = (firstName?: string, lastName?: string) => `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  // FIX: The useUser hook is sufficient as PublicUserProfile includes the profile picture URL.
+  const { data: seller, isLoading } = useUser(sellerId);
+
+  // FIX: New getInitials function that works with displayName.
+  const getInitials = (displayName?: string) => {
+    if (!displayName) return "??";
+    const parts = displayName.split(' ');
+    if (parts.length > 1) {
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return `${parts[0][0]}${parts[0][1] || ''}`.toUpperCase();
+  };
+
   const memberSinceFormatted = seller?.memberSince ? new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(seller.memberSince)) : null;
 
   if (isLoading) {
@@ -119,21 +129,31 @@ const SellerInfoCard = ({ sellerId }: { sellerId: string }) => {
     );
   }
 
-  const fullName = [seller.firstName, seller.lastName].filter(Boolean).join(' ');
-
   return (
     <Card className="h-fit">
       <CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6" /> Seller Information</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-4"><Avatar className="h-16 w-16 border"><AvatarImage src={profilePicture} alt={fullName} /><AvatarFallback>{getInitials(seller.firstName, seller.lastName)}</AvatarFallback></Avatar><div><p className="text-lg font-bold">{seller.businessName}</p><p className="text-sm text-muted-foreground">{fullName}</p></div></div>
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16 border">
+            {/* FIX: Use seller.profilePicture and seller.displayName */}
+            <AvatarImage src={seller.profilePicture ?? undefined} alt={seller.displayName} />
+            <AvatarFallback>{getInitials(seller.displayName)}</AvatarFallback>
+          </Avatar>
+          <div>
+            {/* FIX: Use seller.displayName and seller.contactName */}
+            <p className="text-lg font-bold">{seller.displayName}</p>
+            {seller.contactName && <p className="text-sm text-muted-foreground">{seller.contactName}</p>}
+          </div>
+        </div>
         {seller.isTrustedUser && (<Badge variant="secondary" className="w-full justify-center py-2 text-base font-semibold border-green-500 text-green-600"><ShieldCheck className="h-5 w-5 mr-2" /> Trusted Seller</Badge>)}
-        {seller.businessDescription && <p className="text-sm text-muted-foreground pt-2">{seller.businessDescription}</p>}
+        {/* FIX: Removed businessDescription as it's not in PublicUserProfile */}
         {memberSinceFormatted && (<div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t"><CalendarDays className="h-4 w-4" /> Member since {memberSinceFormatted}</div>)}
       </CardContent>
       <CardFooter><Button variant="outline" className="w-full" asChild><Link href={`/profile/${seller._id}`}>View Profile</Link></Button></CardFooter>
     </Card>
   );
 };
+// --- ^^^^^^^ END OF CORRECTED COMPONENT ^^^^^^^ ---
 
 // --- MAIN PRODUCT DETAILS COMPONENT ---
 const ProductDetails = ({ product, media, onAddToCartClick }: { product: Product, media: { images: Media[], videos: Media[], audio: Media[], links: Media[] } | null, onAddToCartClick: () => void }) => {
@@ -165,14 +185,10 @@ export default function ProductBody({ id }: BodyProps) {
     setIsMounted(true);
   }, []);
 
-  // --- THIS IS THE FIX ---
-  // The isLoading logic is now simpler and more robust.
-  // We are loading if the page hasn't mounted OR if either of the hooks are in their loading state.
   const isLoading = !isMounted || isProductLoading || isMediaLoading;
   const error = productError || mediaError;
 
   const renderContent = () => {
-    // Only show skeleton if we are truly in a loading state.
     if (isLoading) {
       return (
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-12">
@@ -182,13 +198,11 @@ export default function ProductBody({ id }: BodyProps) {
       );
     }
 
-    // After loading is finished for ALL hooks, we can safely check for an error or a missing product.
     if (error || !product) {
       const errorMessage = error instanceof AxiosError ? error.response?.data?.message : "The product you're looking for doesn't exist or has been removed.";
       return <Card className="border-destructive max-w-lg mx-auto"><CardHeader className="text-center"><CardTitle className="flex items-center justify-center gap-3 text-destructive"><AlertTriangle size={48} />Product Not Found</CardTitle><CardDescription>{errorMessage}</CardDescription></CardHeader><CardContent className="flex justify-center gap-3 mt-4"><Button variant="outline" onClick={() => window.history.back()}>Go Back</Button><Button asChild><Link href="/products">See All Products</Link></Button></CardContent></Card>;
     }
 
-    // If everything is fine, render the details and the modal.
     return (
         <>
             <ProductDetails product={product} media={media} onAddToCartClick={() => setIsModalOpen(true)} />

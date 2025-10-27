@@ -1,18 +1,18 @@
-// @/lib/apiClient.ts
-
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import { 
   AuthResponse, 
-  User, 
+  AuthenticatedUser,
+  PublicUserProfile,
   Category, 
   Zone, 
   PaginatedProductsResponse, 
   ProductQuery,
   Product,
-  GroupedMedia
+  GroupedMedia,
+  Media,
+  Collection,
 } from './types';
-import { Collection } from '@/app/components/hooks/use-collections';
 
 interface ApiErrorResponse {
   message: string | string[];
@@ -27,7 +27,6 @@ class ApiClient {
     this.instance = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL,
       timeout: 10000,
-      headers: { 'Content-Type': 'application/json' },
     });
     this.setupInterceptors();
   }
@@ -40,6 +39,11 @@ class ApiClient {
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
+        }
+        if (config.data instanceof FormData) {
+          delete config.headers['Content-Type'];
+        } else {
+          config.headers['Content-Type'] = 'application/json';
         }
         return config;
       },
@@ -85,8 +89,8 @@ class ApiClient {
       this.instance.post('/auth/register', data),
     login: (data: Record<string, unknown>): Promise<{ data: AuthResponse }> =>
       this.instance.post('/auth/login', data),
-    getProfile: (): Promise<{ data: User }> =>
-      this.instance.get('/auth/profile'),
+    getProfile: (): Promise<{ data: AuthenticatedUser }> =>
+      this.instance.get('/users/me'),
     validateOtp: (data: { email: string; otp: string }) =>
       this.instance.post('/auth/validate-otp', data),
     requestNewOtp: (data: { email: string }) =>
@@ -126,10 +130,29 @@ class ApiClient {
   };
 
   users = {
-    // This now assumes a PROTECTED route like GET /users/:id exists on your backend.
-    // If it doesn't, this call will fail gracefully.
-    getById: (userId: string, signal?: AbortSignal): Promise<{ data: User }> =>
+    getPublicProfileById: (userId: string, signal?: AbortSignal): Promise<{ data: PublicUserProfile }> =>
       this.instance.get(`/users/${userId}`, { signal }),
+    
+    getMyUploads: (signal?: AbortSignal): Promise<{ data: GroupedMedia }> =>
+      this.instance.get('/users/me/uploads', { signal }),
+
+    uploadProfilePicture: (file: File): Promise<{ data: Media }> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return this.instance.post('/users/me/profile-picture', formData);
+    },
+
+    uploadBackgroundPicture: (file: File): Promise<{ data: Media }> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return this.instance.post('/users/me/background-picture', formData);
+    },
+
+    setProfilePictureFromUrl: (url: string): Promise<{ data: Media }> =>
+      this.instance.post('/users/me/profile-picture/from-url', { url }),
+
+    setBackgroundPictureFromUrl: (url: string): Promise<{ data: Media }> =>
+      this.instance.post('/users/me/background-picture/from-url', { url }),
   };
 }
 

@@ -15,16 +15,12 @@ import Footer from "@/app/components/common/footer";
 import { Header } from "@/app/components/common/header";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 import apiClient from "@/lib/apiClient";
-import { Category, Product, Zone } from "@/lib/types";
+import { Category, Product, Zone, Collection, CollectionProduct } from "@/lib/types";
 import { useProductsByCriteria } from "@/app/components/hooks/get-products-by-criteria";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import CountdownTimer from "@/app/(routes)/home/count-down-timer";
-import { Collection, CollectionProduct } from "@/app/components/hooks/use-collections";
 
-// Define the possible views locally
 type ProductView = 'all' | 'category' | 'zone' | 'collection';
-
-// --- VISUAL COMPONENTS & HELPERS (LOCALIZED WITHIN BODY.TSX) ---
 
 const slugify = (prefix: string, text: string) => `${prefix}-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`;
 
@@ -73,7 +69,6 @@ const ProductSection = ({ id, title, description, Icon, criteria }: { id: string
   );
 };
 
-// --- THE MAIN BODY COMPONENT ---
 const Body = () => {
   const { language } = useLanguage();
   const [showTopButton, setShowTopButton] = useState(false);
@@ -84,9 +79,8 @@ const Body = () => {
   const [zones, setZones] = useState<Zone[] | null>(null);
   const [collections, setCollections] = useState<Collection[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMounted, setIsMounted] = useState(false); // State to fix hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Set mounted state on client
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -113,7 +107,6 @@ const Body = () => {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
   
-  // --- NAVBAR DEFINITION ---
   const productsNavbar = (
     <div className="sticky top-[56px] md:top-[60px] z-30 w-full bg-background/80 backdrop-blur-sm border-b">
       <div className="w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -144,14 +137,12 @@ const Body = () => {
     </div>
   );
   
-  // --- SIDEBAR DEFINITION ---
   const productsSidebar = (
     <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon"><Menu className="h-6 w-6" /><span className="sr-only">Open Page Navigation</span></Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-full max-w-xs sm:max-w-sm p-0 flex flex-col">
-        {/* Reverted to your requested structure to avoid changing inputs */}
         <SheetHeader className="p-4 border-b">
             <SheetTitle><Image src={'/logo/logo.svg'} alt="Menu" height={100} width={200}/></SheetTitle>
         </SheetHeader>
@@ -168,9 +159,12 @@ const Body = () => {
           <div>
             <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t flex items-center-safe gap-2"><Radar className="h-6 w-6"/><h3 className="text-base">Zones</h3></div>
             {isLoading ? <Skeleton className="h-24 w-full" /> : zones?.map((zone) => (
+              // --- vvvvvvvvvv FIX 1 vvvvvvvvvv ---
+              // Use zone.name directly for the slug and the button text
               <Link key={zone._id} href={`#${slugify('zone', zone.name)}`} onClick={() => { setView('zone'); setIsSidebarOpen(false); }} className="block">
                 <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Globe className="h-5 w-5 text-muted-foreground"/>{zone.name}</Button>
               </Link>
+              // --- ^^^^^^^^^^ FIX 1 ^^^^^^^^^^ ---
             ))}
           </div>
           <div>
@@ -187,7 +181,6 @@ const Body = () => {
   );
 
   return ( 
-    // Use the isMounted state to conditionally render the sidebar
     <BasicPageProvider header={<Header/>} footer={<Footer/>} navbar={productsNavbar} sidebar={isMounted ? productsSidebar : null}>
       <main className="flex flex-col items-center justify-start py-6 sm:py-8 px-4 bg-background text-foreground relative">
         <div className="w-full max-w-7xl mb-8 text-center"><h1 className="flex items-center justify-center gap-4 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter"><Package className="h-8 sm:h-10 w-8 sm:w-10" />Our Products</h1><p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-sm sm:text-base">Explore a wide range of quality products, perfectly organized for your convenience.</p></div>
@@ -195,7 +188,10 @@ const Body = () => {
           {isLoading && (<div className="w-full max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{Array.from({ length: 10 }).map((_, i) => (<div key={i} className="rounded-lg border bg-card shadow-sm"><Skeleton className="h-40 sm:h-48 w-full rounded-t-lg rounded-b-none" /><div className="p-3 sm:p-4 space-y-2 border-t"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div>))}</div>)}
           {!isLoading && view === 'all' && (<div className="w-full max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{allProducts?.map(product => <ProductCard key={product._id} product={product} />)}</div>)}
           {!isLoading && view === 'category' && categories?.map(category => (<ProductSection key={category._id} id={slugify('category', category.name)} title={category.name} description={category.description} Icon={Tag} criteria={{ type: 'category', id: category._id }} />))}
+          {/* --- vvvvvvvvvv FIX 2 vvvvvvvvvv --- */}
+          {/* Use zone.name directly for the slug and the title */}
           {!isLoading && view === 'zone' && zones?.map(zone => (<ProductSection key={zone._id} id={slugify('zone', zone.name)} title={zone.name} description={zone.description} Icon={Globe} criteria={{ type: 'zone', id: zone._id }} />))}
+          {/* --- ^^^^^^^^^^ FIX 2 ^^^^^^^^^^ --- */}
           {!isLoading && view === 'collection' && collections?.map(collection => (<ContentMenu key={collection._id} id={collection.url} language={language} title={language === 'bn' ? collection.title_bn : collection.title} iconName={collection.lucide_react_icon} productCount={collection.products.length} content={<ProductGrid products={collection.products} />} endDate={collection.url === 'limited-time-offer' ? collection.end_date : undefined}/>))}
         </div>
         {showTopButton && (<button type="button" onClick={scrollToTop} aria-label="Scroll to top" className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 p-3 rounded-full shadow-lg z-50 transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 active:scale-100"><ArrowUp className="w-6 h-6" /></button>)}

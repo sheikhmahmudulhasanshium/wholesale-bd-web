@@ -24,6 +24,7 @@ const breadcrumbTranslations = {
     dashboard: 'Dashboard',
     products: 'Products',
     category: 'Category',
+    profile: 'Profile'
   },
   bn: {
     home: 'হোম',
@@ -31,6 +32,8 @@ const breadcrumbTranslations = {
     dashboard: 'ড্যাশবোর্ড',
     products: 'পণ্য',
     category: 'ক্যাটাগরি',
+    profile: 'প্রোফাইল'
+
   }
 };
 
