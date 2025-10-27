@@ -10,7 +10,6 @@ import {
   PaginatedProductsResponse, 
   ProductQuery,
   Product,
-  // --- ADDED NEW TYPES ---
   GroupedMedia
 } from './types';
 import { Collection } from '@/app/components/hooks/use-collections';
@@ -100,32 +99,15 @@ class ApiClient {
 
   products = {
     create: (data: FormData): Promise<{ data: Product }> => this.instance.post('/products', data),
-    
-    getAll: (params: ProductQuery, signal?: AbortSignal): Promise<{ data: PaginatedProductsResponse }> => 
-      this.instance.get('/products', { params, signal }),
-    
-    getAllPublic: (signal?: AbortSignal): Promise<{ data: Product[] }> => 
-      this.instance.get('/products/public/all', { signal }),
-         
-    getById: (id: string, signal?: AbortSignal): Promise<{ data: Product }> =>
-      this.instance.get(`/products/${id}`, { signal }),
-
-    getByIdPublic: (id: string, signal?: AbortSignal): Promise<{ data: Product }> =>
-      this.instance.get(`/products/public/find/${id}`, { signal }),
-
-    getByCategoryIdPublic: (categoryId: string, signal?: AbortSignal): Promise<{ data: Product[] }> =>
-      this.instance.get(`/products/public/category/${categoryId}`, { signal }),
-
-    getByZoneIdPublic: (zoneId: string, signal?: AbortSignal): Promise<{ data: Product[] }> =>
-      this.instance.get(`/products/public/zone/${zoneId}`, { signal }),
-
-    getBySellerIdPublic: (sellerId: string, signal?: AbortSignal): Promise<{ data: Product[] }> =>
-      this.instance.get(`/products/public/seller/${sellerId}`, { signal }),
-    
-    update: (id: string, data: FormData): Promise<{ data: Product }> =>
-      this.instance.patch(`/products/${id}`, data),
+    getAll: (params: ProductQuery, signal?: AbortSignal): Promise<{ data: PaginatedProductsResponse }> => this.instance.get('/products', { params, signal }),
+    getAllPublic: (signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get('/products/public/all', { signal }),
+    getById: (id: string, signal?: AbortSignal): Promise<{ data: Product }> => this.instance.get(`/products/${id}`, { signal }),
+    getByIdPublic: (id: string, signal?: AbortSignal): Promise<{ data: Product }> => this.instance.get(`/products/public/find/${id}`, { signal }),
+    getByCategoryIdPublic: (categoryId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/category/${categoryId}`, { signal }),
+    getByZoneIdPublic: (zoneId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/zone/${zoneId}`, { signal }),
+    getBySellerIdPublic: (sellerId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/seller/${sellerId}`, { signal }),
+    update: (id: string, data: FormData): Promise<{ data: Product }> => this.instance.patch(`/products/${id}`, data),
     delete: (id: string): Promise<void> => this.instance.delete(`/products/${id}`),
-    
     getCategories: (): Promise<{ data: Category[] }> => this.instance.get('/categories'),
     getZones: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
   };
@@ -138,10 +120,16 @@ class ApiClient {
     findAllPublic: (): Promise<{ data: Collection[] }> => this.instance.get('/collections'),
   };
   
-  // --- NEW: UPLOADS OBJECT ---
   uploads = {
     getMediaForEntity: (entityModel: 'Product' | 'User', entityId: string, signal?: AbortSignal): Promise<{ data: GroupedMedia }> =>
       this.instance.get(`/uploads/by/${entityModel}/${entityId}`, { signal }),
+  };
+
+  users = {
+    // This now assumes a PROTECTED route like GET /users/:id exists on your backend.
+    // If it doesn't, this call will fail gracefully.
+    getById: (userId: string, signal?: AbortSignal): Promise<{ data: User }> =>
+      this.instance.get(`/users/${userId}`, { signal }),
   };
 }
 

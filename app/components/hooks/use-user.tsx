@@ -2,18 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
-import { GroupedMedia } from '@/lib/types';
+import { User } from '@/lib/types';
 import axios from 'axios';
 
-// --- ADD `entityModel` as a parameter ---
-export const useProductMedia = (entityId: string | null, entityModel: 'Product' | 'User') => {
-  const [data, setData] = useState<GroupedMedia | null>(null);
+export const useUser = (userId: string | null) => {
+  const [data, setData] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true); 
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Now we check for both an ID and a model
-    if (!entityId || !entityModel) {
+    if (!userId) {
       setIsLoading(false);
       return;
     }
@@ -25,11 +23,12 @@ export const useProductMedia = (entityId: string | null, entityModel: 'Product' 
       setData(null);
 
       try {
-        // Use the parameters dynamically
-        const response = await apiClient.uploads.getMediaForEntity(entityModel, entityId, controller.signal);
+        // Calling the protected endpoint. This may fail if not logged in.
+        const response = await apiClient.users.getById(userId, controller.signal);
         setData(response.data);
       } catch (err) {
         if (!axios.isCancel(err)) {
+          console.error(`Failed to fetch user ${userId}. A public endpoint may be needed, or the user must be logged in.`, err);
           setError(err as Error);
         }
       } finally {
@@ -40,7 +39,7 @@ export const useProductMedia = (entityId: string | null, entityModel: 'Product' 
     fetchData();
 
     return () => controller.abort();
-  }, [entityId, entityModel]); // Add entityModel to dependency array
+  }, [userId]);
 
   return { data, isLoading, error };
 };

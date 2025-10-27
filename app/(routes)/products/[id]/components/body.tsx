@@ -6,14 +6,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { AxiosError } from "axios";
 import {
-  AlertTriangle, MapPin, Package as PackageIcon, DollarSign as DollarSignIcon, ShoppingCart, UserCircle, ShieldCheck, Star, Eye, MessageSquare, Weight, Scan, Ruler, Link2
+  AlertTriangle, MapPin, Package as PackageIcon, DollarSign as DollarSignIcon, ShoppingCart, UserCircle, ShieldCheck, Star, Eye, MessageSquare, Weight, Scan, Ruler, Link2, CalendarDays
 } from "lucide-react";
 
 import apiClient from "@/lib/apiClient";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 import { Header } from "@/app/components/common/header";
 import Footer from "@/app/components/common/footer";
-import { Product, Zone, Media } from "@/lib/types";
+import { Product, Zone, Media, User } from "@/lib/types";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProduct } from "@/app/components/hooks/get-product";
 import { useProductMedia } from "@/app/components/hooks/use-product-media";
+import { useUser } from "@/app/components/hooks/use-user";
 import { AddToCartModal } from "@/app/components/modals/cart-modal";
 import { Separator } from "@/components/ui/separator";
 import { ProductImageGallery } from "./ProductImageGallery";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BodyProps {
   id: string;
@@ -65,22 +67,15 @@ const ProductStats = ({ rating, reviewCount, viewCount }: { rating: number, revi
     </div>
 );
 
-// --- THIS COMPONENT IS UPDATED TO TRUNCATE LONG URLS ---
 const ProductLinks = ({ links }: { links?: Media[] }) => {
   if (!links || links.length === 0) return null;
-
   return (
     <Card>
       <CardHeader><CardTitle className="flex items-center gap-2"><Link2 className="h-6 w-6"/> External Links</CardTitle></CardHeader>
       <CardContent className="space-y-2">
         {links.map(link => (
           <Button key={link._id} variant="outline" className="w-full justify-start gap-2" asChild>
-            <a href={link.url} target="_blank" rel="noopener noreferrer">
-                {/* Add an icon for better context */}
-                <Link2 className="h-4 w-4 flex-shrink-0" />
-                {/* The span will truncate the text if it's too long */}
-                <span className="truncate">{link.url}</span>
-            </a>
+            <a href={link.url} target="_blank" rel="noopener noreferrer"><Link2 className="h-4 w-4 flex-shrink-0" /><span className="truncate">{link.url}</span></a>
           </Button>
         ))}
       </CardContent>
@@ -88,28 +83,57 @@ const ProductLinks = ({ links }: { links?: Media[] }) => {
   );
 };
 
-
 const ProductInfoSections = ({ product, links }: { product: Product, links?: Media[] }) => (
     <div className="space-y-8">
-        <Card>
-            <CardHeader><CardTitle>Product Description</CardTitle></CardHeader>
-            <CardContent><p className="text-muted-foreground leading-relaxed">{product.description}</p></CardContent>
-        </Card>
-        <Card>
-            <CardHeader><CardTitle>Specifications</CardTitle></CardHeader>
-            <CardContent className="space-y-4 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Brand</span><span className="font-semibold">{product.brand}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Model</span><span className="font-semibold">{product.model}</span></div>
-                {product.weight && <div className="flex justify-between"><span className="text-muted-foreground flex items-center gap-2"><Weight className="h-4 w-4"/>Weight</span><span className="font-semibold">{product.weight} kg</span></div>}
-                {product.dimensions && <div className="flex justify-between"><span className="text-muted-foreground flex items-center gap-2"><Ruler className="h-4 w-4"/>Dimensions</span><span className="font-semibold">{product.dimensions}</span></div>}
-                {product.sku && <div className="flex justify-between"><span className="text-muted-foreground flex items-center gap-2"><Scan className="h-4 w-4"/>SKU</span><span className="font-semibold">{product.sku}</span></div>}
-                {product.specifications && <div className="pt-4 border-t"><p className="text-muted-foreground whitespace-pre-wrap">{product.specifications}</p></div>}
-            </CardContent>
-        </Card>
+        <Card><CardHeader><CardTitle>Product Description</CardTitle></CardHeader><CardContent><p className="text-muted-foreground leading-relaxed">{product.description}</p></CardContent></Card>
+        <Card><CardHeader><CardTitle>Specifications</CardTitle></CardHeader><CardContent className="space-y-4 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Brand</span><span className="font-semibold">{product.brand}</span></div><div className="flex justify-between"><span className="text-muted-foreground">Model</span><span className="font-semibold">{product.model}</span></div>{product.weight && <div className="flex justify-between"><span className="text-muted-foreground flex items-center gap-2"><Weight className="h-4 w-4"/>Weight</span><span className="font-semibold">{product.weight} kg</span></div>}{product.dimensions && <div className="flex justify-between"><span className="text-muted-foreground flex items-center gap-2"><Ruler className="h-4 w-4"/>Dimensions</span><span className="font-semibold">{product.dimensions}</span></div>}{product.sku && <div className="flex justify-between"><span className="text-muted-foreground flex items-center gap-2"><Scan className="h-4 w-4"/>SKU</span><span className="font-semibold">{product.sku}</span></div>}{product.specifications && <div className="pt-4 border-t"><p className="text-muted-foreground whitespace-pre-wrap">{product.specifications}</p></div>}</CardContent></Card>
         <ProductLinks links={links} />
     </div>
 );
 
+const SellerInfoCard = ({ sellerId }: { sellerId: string }) => {
+  const { data: seller, isLoading: isSellerLoading } = useUser(sellerId);
+  const { data: media, isLoading: isMediaLoading } = useProductMedia(sellerId, 'User');
+  const isLoading = isSellerLoading || isMediaLoading;
+  const profilePicture = media?.images?.[0]?.url;
+  const getInitials = (firstName?: string, lastName?: string) => `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  const memberSinceFormatted = seller?.memberSince ? new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(seller.memberSince)) : null;
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6" /> Seller Information</CardTitle></CardHeader>
+        <CardContent className="space-y-4"><div className="flex items-center gap-4"><Skeleton className="h-16 w-16 rounded-full" /><div className="space-y-2"><Skeleton className="h-5 w-40" /><Skeleton className="h-4 w-24" /></div></div><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></CardContent>
+        <CardFooter><Skeleton className="h-10 w-full" /></CardFooter>
+      </Card>
+    );
+  }
+  
+  if (!seller) {
+    return (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6" /> Seller Information</CardTitle></CardHeader>
+          <CardContent><p className="text-sm text-muted-foreground">Seller details could not be loaded.</p></CardContent>
+          <CardFooter><Button variant="outline" className="w-full" asChild><Link href={`/profile/${sellerId}`}>View Profile</Link></Button></CardFooter>
+        </Card>
+    );
+  }
+
+  const fullName = [seller.firstName, seller.lastName].filter(Boolean).join(' ');
+
+  return (
+    <Card className="h-fit">
+      <CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6" /> Seller Information</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center gap-4"><Avatar className="h-16 w-16 border"><AvatarImage src={profilePicture} alt={fullName} /><AvatarFallback>{getInitials(seller.firstName, seller.lastName)}</AvatarFallback></Avatar><div><p className="text-lg font-bold">{seller.businessName}</p><p className="text-sm text-muted-foreground">{fullName}</p></div></div>
+        {seller.isTrustedUser && (<Badge variant="secondary" className="w-full justify-center py-2 text-base font-semibold border-green-500 text-green-600"><ShieldCheck className="h-5 w-5 mr-2" /> Trusted Seller</Badge>)}
+        {seller.businessDescription && <p className="text-sm text-muted-foreground pt-2">{seller.businessDescription}</p>}
+        {memberSinceFormatted && (<div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t"><CalendarDays className="h-4 w-4" /> Member since {memberSinceFormatted}</div>)}
+      </CardContent>
+      <CardFooter><Button variant="outline" className="w-full" asChild><Link href={`/profile/${seller._id}`}>View Profile</Link></Button></CardFooter>
+    </Card>
+  );
+};
 
 // --- MAIN PRODUCT DETAILS COMPONENT ---
 const ProductDetails = ({ product, media, onAddToCartClick }: { product: Product, media: { images: Media[], videos: Media[], audio: Media[], links: Media[] } | null, onAddToCartClick: () => void }) => {
@@ -122,18 +146,9 @@ const ProductDetails = ({ product, media, onAddToCartClick }: { product: Product
         <div className="lg:col-span-5 lg:sticky top-24 h-fit space-y-6">
             <ProductHeader name={product.name} brand={product.brand} model={product.model} />
             <ProductStats rating={product.rating || 0} reviewCount={product.reviewCount || 0} viewCount={product.viewCount || 0} />
-            <Card>
-                <CardHeader><CardTitle className="flex items-center gap-2"><DollarSignIcon className="h-6 w-6" /> Pricing</CardTitle><CardDescription>Minimum order: {product.minimumOrderQuantity} {product.unit}(s)</CardDescription></CardHeader>
-                <CardContent><PricingTiersList tiers={product.pricingTiers} unit={product.unit} /></CardContent>
-            </Card>
-            <Card>
-                <CardContent className="pt-6 space-y-4"><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><PackageIcon className="h-5 w-5" /> In Stock:</div><Badge variant={product.stockQuantity > 0 ? "default" : "destructive"}>{product.stockQuantity} {product.unit}(s)</Badge></div><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><MapPin className="h-5 w-5" /> Shipping From:</div><span className="font-semibold"><ZoneDisplay zoneId={product.zoneId} /></span></div><Button size="lg" className="w-full text-lg mt-4 h-12" onClick={onAddToCartClick}><ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart</Button></CardContent>
-            </Card>
-            <Card>
-                <CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6" /> Seller</CardTitle></CardHeader>
-                <CardContent className="space-y-2"><div className="flex items-center gap-2 font-semibold"><ShieldCheck className="h-5 w-5 text-green-500" /> Verified Seller</div><p className="text-xs text-muted-foreground">ID: {product.sellerId.slice(0, 12)}...</p></CardContent>
-                <CardFooter><Button variant="outline" className="w-full" asChild><Link href={`/sellers/${product.sellerId}`}>View Seller Profile</Link></Button></CardFooter>
-            </Card>
+            <Card><CardHeader><CardTitle className="flex items-center gap-2"><DollarSignIcon className="h-6 w-6" /> Pricing</CardTitle><CardDescription>Minimum order: {product.minimumOrderQuantity} {product.unit}(s)</CardDescription></CardHeader><CardContent><PricingTiersList tiers={product.pricingTiers} unit={product.unit} /></CardContent></Card>
+            <Card><CardContent className="pt-6 space-y-4"><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><PackageIcon className="h-5 w-5" /> In Stock:</div><Badge variant={product.stockQuantity > 0 ? "default" : "destructive"}>{product.stockQuantity} {product.unit}(s)</Badge></div><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><MapPin className="h-5 w-5" /> Shipping From:</div><span className="font-semibold"><ZoneDisplay zoneId={product.zoneId} /></span></div><Button size="lg" className="w-full text-lg mt-4 h-12" onClick={onAddToCartClick}><ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart</Button></CardContent></Card>
+            <SellerInfoCard sellerId={product.sellerId} />
         </div>
     </div>
   );
@@ -142,35 +157,38 @@ const ProductDetails = ({ product, media, onAddToCartClick }: { product: Product
 // --- MAIN PAGE BODY COMPONENT ---
 export default function ProductBody({ id }: BodyProps) {
   const { data: product, isLoading: isProductLoading, error: productError } = useProduct(id);
-  const { data: media, isLoading: isMediaLoading, error: mediaError } = useProductMedia(id);
+  const { data: media, isLoading: isMediaLoading, error: mediaError } = useProductMedia(id, 'Product');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  const isLoading = isProductLoading || isMediaLoading;
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // --- THIS IS THE FIX ---
+  // The isLoading logic is now simpler and more robust.
+  // We are loading if the page hasn't mounted OR if either of the hooks are in their loading state.
+  const isLoading = !isMounted || isProductLoading || isMediaLoading;
   const error = productError || mediaError;
 
   const renderContent = () => {
+    // Only show skeleton if we are truly in a loading state.
     if (isLoading) {
       return (
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-12">
-            <div className="lg:col-span-7 space-y-8">
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-48 w-full" />
-            </div>
-            <div className="lg:col-span-5 space-y-6">
-                <Skeleton className="h-10 w-3/4" />
-                <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-40 w-full" />
-                <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-32 w-full" />
-            </div>
+            <div className="lg:col-span-7 space-y-8"><Skeleton className="aspect-square w-full" /><Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" /></div>
+            <div className="lg:col-span-5 space-y-6"><Skeleton className="h-10 w-3/4" /><Skeleton className="h-5 w-full" /><Skeleton className="h-40 w-full" /><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
         </div>
       );
     }
+
+    // After loading is finished for ALL hooks, we can safely check for an error or a missing product.
     if (error || !product) {
       const errorMessage = error instanceof AxiosError ? error.response?.data?.message : "The product you're looking for doesn't exist or has been removed.";
       return <Card className="border-destructive max-w-lg mx-auto"><CardHeader className="text-center"><CardTitle className="flex items-center justify-center gap-3 text-destructive"><AlertTriangle size={48} />Product Not Found</CardTitle><CardDescription>{errorMessage}</CardDescription></CardHeader><CardContent className="flex justify-center gap-3 mt-4"><Button variant="outline" onClick={() => window.history.back()}>Go Back</Button><Button asChild><Link href="/products">See All Products</Link></Button></CardContent></Card>;
     }
+
+    // If everything is fine, render the details and the modal.
     return (
         <>
             <ProductDetails product={product} media={media} onAddToCartClick={() => setIsModalOpen(true)} />

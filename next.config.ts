@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'pub-1508a97a3d584140a7f32f1ca90490c2.r2.dev',
 
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.deccanchronicle.com',
+
       }
     ]
   },

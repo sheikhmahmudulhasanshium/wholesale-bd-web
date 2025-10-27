@@ -12,7 +12,10 @@ export interface User {
   role: "customer" | "seller" | "admin";
   profilePicture?: string;
   businessName?: string;
+  businessDescription?:string
   phone?: string;
+  memberSince?:string;
+  isTrustedUser?:boolean
 }
 
 export interface AuthResponse {
