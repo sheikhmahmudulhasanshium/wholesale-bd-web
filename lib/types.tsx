@@ -1,11 +1,8 @@
+// @/lib/types.ts
+
 import type { Metadata } from 'next';
 
 // --- Auth & User Types ---
-
-/**
- * Represents the detailed user object for an authenticated user.
- * Based on the backend's `UserResponseDto`.
- */
 export interface AuthenticatedUser {
   _id: string;
   email: string;
@@ -30,11 +27,6 @@ export interface AuthenticatedUser {
   updatedAt: string; // Date
   lastLogin?: string; // Date
 }
-
-/**
- * Represents the public-facing user profile.
- * Based on the backend's `UnifiedPublicProfileDto`.
- */
 export interface PublicUserProfile {
   _id: string;
   displayName: string;
@@ -50,7 +42,6 @@ export interface PublicUserProfile {
   isTrustedUser?: boolean;
   memberSince: string; // Date is serialized as string
 }
-
 export interface AuthResponse {
   token: string;
   user: AuthenticatedUser;
@@ -66,13 +57,11 @@ export interface Seller {
   phone?: string;
   zone?: string;
 }
-
 export interface Category {
   _id: string;
   name: string;
   description?: string;
 }
-
 export interface Zone {
   _id: string;
   name: string;
@@ -81,7 +70,6 @@ export interface Zone {
   isActive: boolean;
   sortingOrder?: number;
 }
-
 export interface PricingTier {
   minQuantity: number;
   maxQuantity?: number;
@@ -90,18 +78,12 @@ export interface PricingTier {
 }
 
 // --- Media & Upload Types ---
-
-/**
- * Represents a structured media item associated with a product.
- * Based on the backend's `ProductMediaDto`.
- */
 export interface ProductMedia {
   _id: string;
   url: string;
   purpose: 'thumbnail' | 'preview';
   priority: number;
 }
-
 export interface Media {
   _id: string;
   url: string;
@@ -110,7 +92,6 @@ export interface Media {
   originalName?: string;
   productId?: string;
 }
-
 export interface GroupedMedia {
   images: Media[];
   videos: Media[];
@@ -118,6 +99,7 @@ export interface GroupedMedia {
   links: Media[];
 }
 
+// --- Product Type ---
 export interface Product {
   _id: string;
   name: string;
@@ -151,21 +133,29 @@ export interface Product {
   __v: number;
 }
 
-// --- Collection Types ---
+// --- VVVVVV ADDED COLLECTION TYPES VVVVVV ---
 export interface CollectionProduct {
   product: Product;
   priority: number;
 }
-
 export interface Collection {
   _id: string;
   title: string;
   title_bn: string;
+  description?: string;
+  description_bn?: string;
   url: string;
   lucide_react_icon?: string;
+  priority: number;
+  is_active: boolean;
+  start_date?: string;
   end_date?: string;
   products: CollectionProduct[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
+// --- ^^^^^^ END OF ADDED TYPES ^^^^^^ ---
 
 // --- API Query & Response Types ---
 export interface ProductQuery {
@@ -181,7 +171,6 @@ export interface ProductQuery {
   page?: number;
   limit?: number;
 }
-
 export interface PaginatedProductsResponse {
   products: Product[];
   total: number;
@@ -192,8 +181,6 @@ export interface PaginatedProductsResponse {
 
 // --- OpenGraph Type Extension ---
 type BaseOpenGraph = NonNullable<Metadata['openGraph']>;
-
-// --- THIS IS THE CORRECTED LINE ---
 export type ExtendedOpenGraph = Omit<BaseOpenGraph, 'type'> & {
   type: 'product';
 };

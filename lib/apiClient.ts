@@ -1,4 +1,3 @@
-// @/lib/apiClient.ts
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import { 
@@ -13,6 +12,7 @@ import {
   GroupedMedia,
   Media,
   Collection,
+  ProductMedia,
 } from './types';
 
 interface ApiErrorResponse {
@@ -21,6 +21,10 @@ interface ApiErrorResponse {
   statusCode?: number;
 }
 
+type RawProductData = Omit<Product, 'thumbnail' | 'previews'> & {
+  media?: ProductMedia[];
+};
+
 class ApiClient {
   public instance: AxiosInstance;
 
@@ -28,6 +32,9 @@ class ApiClient {
     this.instance = axios.create({
       baseURL: process.env.NEXT_PUBLIC_API_URL,
       timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     this.setupInterceptors();
   }
@@ -43,8 +50,6 @@ class ApiClient {
         }
         if (config.data instanceof FormData) {
           delete config.headers['Content-Type'];
-        } else {
-          config.headers['Content-Type'] = 'application/json';
         }
         return config;
       },
@@ -85,6 +90,22 @@ class ApiClient {
     }
   }
 
+  private _transformProductShape = (productData: RawProductData): Product => {
+    if (productData && 'thumbnail' in productData) {
+      return productData as Product;
+    }
+
+    const media: ProductMedia[] = productData.media || [];
+    const sortedMedia = [...media].sort((a, b) => (a.priority || 0) - (b.priority || 0));
+    
+    const thumbnail = sortedMedia.find(m => m.purpose === 'thumbnail') || null;
+    const previews = sortedMedia.filter(m => m.purpose === 'preview');
+
+    const { media: _media, ...rest } = productData;
+
+    return { ...rest, thumbnail, previews } as Product;
+  }
+
   auth = {
     register: (data: Record<string, unknown>): Promise<{ data: AuthResponse }> => 
       this.instance.post('/auth/register', data),
@@ -105,18 +126,38 @@ class ApiClient {
   products = {
     create: (data: Partial<Product>): Promise<{ data: Product }> => this.instance.post('/products', data),
     getAll: (params: ProductQuery, signal?: AbortSignal): Promise<{ data: PaginatedProductsResponse }> => this.instance.get('/products', { params, signal }),
-    getAllPublic: (signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get('/products/public/all', { signal }),
     getById: (id: string, signal?: AbortSignal): Promise<{ data: Product }> => this.instance.get(`/products/${id}`, { signal }),
-    getByIdPublic: (id: string, signal?: AbortSignal): Promise<{ data: Product }> => this.instance.get(`/products/public/find/${id}`, { signal }),
-    getByCategoryIdPublic: (categoryId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/category/${categoryId}`, { signal }),
-    getByZoneIdPublic: (zoneId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/zone/${zoneId}`, { signal }),
-    getBySellerIdPublic: (sellerId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/seller/${sellerId}`, { signal }),
     update: (id: string, data: Partial<Product>): Promise<{ data: Product }> => this.instance.patch(`/products/${id}`, data),
     delete: (id: string): Promise<void> => this.instance.delete(`/products/${id}`),
     getCategories: (): Promise<{ data: Category[] }> => this.instance.get('/categories'),
     getZones: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
     
-    // New media management endpoints
+    getAllPublic: async (signal?: AbortSignal): Promise<{ data: Product[] }> => {
+        const response = await this.instance.get<RawProductData[]>('/products/public/all', { signal });
+        response.data = response.data.map(this._transformProductShape);
+        return response as unknown as { data: Product[] };
+    },
+    getByIdPublic: async (id: string, signal?: AbortSignal): Promise<{ data: Product }> => {
+        const response = await this.instance.get<RawProductData>(`/products/public/find/${id}`, { signal });
+        response.data = this._transformProductShape(response.data);
+        return response as unknown as { data: Product };
+    },
+    getByCategoryIdPublic: async (categoryId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => {
+        const response = await this.instance.get<RawProductData[]>(`/products/public/category/${categoryId}`, { signal });
+        response.data = response.data.map(this._transformProductShape);
+        return response as unknown as { data: Product[] };
+    },
+    getByZoneIdPublic: async (zoneId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => {
+        const response = await this.instance.get<RawProductData[]>(`/products/public/zone/${zoneId}`, { signal });
+        response.data = response.data.map(this._transformProductShape);
+        return response as unknown as { data: Product[] };
+    },
+    getBySellerIdPublic: async (sellerId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => {
+        const response = await this.instance.get<RawProductData[]>(`/products/public/seller/${sellerId}`, { signal });
+        response.data = response.data.map(this._transformProductShape);
+        return response as unknown as { data: Product[] };
+    },
+    
     uploadThumbnail: (productId: string, file: File): Promise<{ data: Product }> => {
       const formData = new FormData();
       formData.append('file', file);
@@ -145,7 +186,14 @@ class ApiClient {
   };
 
   collections = {
-    findAllPublic: (): Promise<{ data: Collection[] }> => this.instance.get('/collections'),
+    findAllPublic: async (): Promise<{ data: Collection[] }> => {
+      const response = await this.instance.get<Collection[]>('/collections');
+      response.data = response.data.map(collection => ({
+        ...collection,
+        products: collection.products.map(cp => ({ ...cp, product: this._transformProductShape(cp.product as RawProductData) })),
+      }));
+      return response;
+    },
   };
   
   uploads = {

@@ -1,3 +1,5 @@
+// app/(routes)/products/body.tsx
+
 'use client';
 
 import { useState, useEffect, ElementType, useRef } from "react";
@@ -19,21 +21,19 @@ import { Category, Product, Zone, Collection, CollectionProduct } from "@/lib/ty
 import { useProductsByCriteria } from "@/app/components/hooks/get-products-by-criteria";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import CountdownTimer from "@/app/(routes)/home/count-down-timer";
+import { ProductCard } from "@/app/components/common/product-card"; // <-- 1. IMPORT THE CORRECT COMPONENT
 
 type ProductView = 'all' | 'category' | 'zone' | 'collection';
 
 const slugify = (prefix: string, text: string) => `${prefix}-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`;
 
-const ProductCard = ({ product }: { product: Product }) => (
-  <Link href={`/products/${product._id}`} className="group block overflow-hidden rounded-lg border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
-    <div className="relative h-40 sm:h-48 w-full bg-muted/30"><Image src="/logo/logo.png" alt={product.name} fill className="object-contain p-4 sm:p-6 transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 640px) 50vw, 33vw" /></div>
-    <div className="p-3 sm:p-4 border-t"><h3 className="truncate font-semibold text-sm sm:text-base text-card-foreground">{product.name}</h3><p className="text-xs sm:text-sm text-muted-foreground">{product.brand || 'Generic'}</p></div>
-  </Link>
-);
+// --- 2. REMOVE THE OUTDATED LOCAL ProductCard COMPONENT ---
+// const ProductCard = ({ product }: { product: Product }) => ( ... ); // This entire block is removed.
 
 const ProductGrid = ({ products }: { products: CollectionProduct[] }) => {
+  const { language } = useLanguage(); // Get language context for the card
   if (!products || products.length === 0) return <p className='text-muted-foreground'>No products found in this collection.</p>;
-  return <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{products.map(({ product }) => <ProductCard key={product._id} product={product} />)}</div>;
+  return <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{products.map(({ product }) => <ProductCard key={product._id} product={product} language={language} />)}</div>;
 };
 
 const getIcon = (iconName?: string): LucideIcon => {
@@ -52,7 +52,14 @@ const ContentMenu = ({ id, title, language, iconName, content, productCount, end
         <h2 className="flex items-center text-2xl md:text-3xl font-bold tracking-tight mb-2 gap-3 text-primary"><Icon className="h-7 w-7 md:h-8 md:w-8" />{title}</h2>
         {endDate && <CountdownTimer endDate={endDate} />}
         <div className="mt-6">{content}</div>
-        <motion.div className="flex justify-end mt-6" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}><Link href={`/products/collections/${id}`} className="inline-flex items-center gap-1 rounded-md px-4 py-2 text-sm font-medium bg-primary text-primary-foreground">{language === "bn" ? `সব ${productCount}+ পণ্য দেখুন` : `See All ${productCount}+ Products`}<ChevronDown className="w-4 h-4" /></Link></motion.div>
+        {productCount && productCount > 0 && (
+          <motion.div className="flex justify-end mt-6" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            <Link href={`/products/collections/${id}`} className="inline-flex items-center gap-1 rounded-md px-4 py-2 text-sm font-medium bg-primary text-primary-foreground">
+              {language === "bn" ? `সব ${productCount}+ পণ্য দেখুন` : `See All ${productCount}+ Products`}
+              <ChevronDown className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        )}
       </div>
     </motion.section>
   );
@@ -60,10 +67,14 @@ const ContentMenu = ({ id, title, language, iconName, content, productCount, end
 
 const ProductSection = ({ id, title, description, Icon, criteria }: { id: string; title: string; description?: string; Icon: ElementType; criteria: { type: 'category' | 'zone'; id: string; }; }) => {
   const { data: products, isLoading } = useProductsByCriteria(criteria);
+  const { language } = useLanguage(); // Get language context for the card
   return (
     <section id={id} className="w-full max-w-7xl mb-12">
       <div className="mb-6"><h2 className="flex items-center gap-3 text-2xl md:text-3xl font-bold tracking-tight text-foreground"><Icon className="h-6 w-6 md:h-7 md:w-7 text-primary" />{title}</h2>{description && <p className="mt-2 text-muted-foreground">{description}</p>}</div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{isLoading && Array.from({ length: 5 }).map((_, i) => (<div key={i} className="rounded-lg border bg-card shadow-sm"><Skeleton className="h-40 sm:h-48 w-full rounded-t-lg rounded-b-none" /><div className="p-3 sm:p-4 space-y-2 border-t"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div>))}{products?.map(product => <ProductCard key={product._id} product={product} />)}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {isLoading && Array.from({ length: 5 }).map((_, i) => (<div key={i} className="rounded-lg border bg-card shadow-sm"><Skeleton className="h-40 sm:h-48 w-full rounded-t-lg rounded-b-none" /><div className="p-3 sm:p-4 space-y-2 border-t"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div>))}
+        {products?.map(product => <ProductCard key={product._id} product={product} language={language} />)}
+      </div>
       {!isLoading && products?.length === 0 && (<div className="col-span-full flex flex-col items-center justify-center gap-4 py-16 text-muted-foreground bg-muted/50 rounded-lg"><PackageSearch className="h-12 w-12" /><p className="text-lg font-medium">No products found in this section yet.</p></div>)}
     </section>
   );
@@ -159,12 +170,9 @@ const Body = () => {
           <div>
             <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t flex items-center-safe gap-2"><Radar className="h-6 w-6"/><h3 className="text-base">Zones</h3></div>
             {isLoading ? <Skeleton className="h-24 w-full" /> : zones?.map((zone) => (
-              // --- vvvvvvvvvv FIX 1 vvvvvvvvvv ---
-              // Use zone.name directly for the slug and the button text
               <Link key={zone._id} href={`#${slugify('zone', zone.name)}`} onClick={() => { setView('zone'); setIsSidebarOpen(false); }} className="block">
                 <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Globe className="h-5 w-5 text-muted-foreground"/>{zone.name}</Button>
               </Link>
-              // --- ^^^^^^^^^^ FIX 1 ^^^^^^^^^^ ---
             ))}
           </div>
           <div>
@@ -186,12 +194,12 @@ const Body = () => {
         <div className="w-full max-w-7xl mb-8 text-center"><h1 className="flex items-center justify-center gap-4 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter"><Package className="h-8 sm:h-10 w-8 sm:w-10" />Our Products</h1><p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-sm sm:text-base">Explore a wide range of quality products, perfectly organized for your convenience.</p></div>
         <div className="w-full">
           {isLoading && (<div className="w-full max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{Array.from({ length: 10 }).map((_, i) => (<div key={i} className="rounded-lg border bg-card shadow-sm"><Skeleton className="h-40 sm:h-48 w-full rounded-t-lg rounded-b-none" /><div className="p-3 sm:p-4 space-y-2 border-t"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div>))}</div>)}
-          {!isLoading && view === 'all' && (<div className="w-full max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{allProducts?.map(product => <ProductCard key={product._id} product={product} />)}</div>)}
+          
+          {/* --- 3. PASS language PROP TO ProductCard --- */}
+          {!isLoading && view === 'all' && (<div className="w-full max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{allProducts?.map(product => <ProductCard key={product._id} product={product} language={language} />)}</div>)}
+          
           {!isLoading && view === 'category' && categories?.map(category => (<ProductSection key={category._id} id={slugify('category', category.name)} title={category.name} description={category.description} Icon={Tag} criteria={{ type: 'category', id: category._id }} />))}
-          {/* --- vvvvvvvvvv FIX 2 vvvvvvvvvv --- */}
-          {/* Use zone.name directly for the slug and the title */}
           {!isLoading && view === 'zone' && zones?.map(zone => (<ProductSection key={zone._id} id={slugify('zone', zone.name)} title={zone.name} description={zone.description} Icon={Globe} criteria={{ type: 'zone', id: zone._id }} />))}
-          {/* --- ^^^^^^^^^^ FIX 2 ^^^^^^^^^^ --- */}
           {!isLoading && view === 'collection' && collections?.map(collection => (<ContentMenu key={collection._id} id={collection.url} language={language} title={language === 'bn' ? collection.title_bn : collection.title} iconName={collection.lucide_react_icon} productCount={collection.products.length} content={<ProductGrid products={collection.products} />} endDate={collection.url === 'limited-time-offer' ? collection.end_date : undefined}/>))}
         </div>
         {showTopButton && (<button type="button" onClick={scrollToTop} aria-label="Scroll to top" className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 p-3 rounded-full shadow-lg z-50 transition-all bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-110 active:scale-100"><ArrowUp className="w-6 h-6" /></button>)}

@@ -4,23 +4,20 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Product } from '@/lib/types';
 import EditProductClientPage from './body';
+import apiClient from '@/lib/apiClient'; // <-- 1. IMPORT apiClient
 
+// 2. UPDATE THE PROPS INTERFACE
 interface EditPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-// Server-side data fetching for the edit page
+// 3. UPDATE THE DATA FETCHING FUNCTION TO USE apiClient
 async function getProductForEdit(id: string): Promise<Product | null> {
   try {
-    // Use the public endpoint, as the original hook did. 
-    // Protected data should be handled by the form submission logic.
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/public/find/${id}`, {
-      cache: 'no-store', // Ensure we get the latest data for editing
-    });
-    if (!res.ok) {
-      return null;
-    }
-    return await res.json();
+    // We now use our centralized, type-safe apiClient method.
+    // This also ensures the product shape is transformed correctly.
+    const response = await apiClient.products.getByIdPublic(id);
+    return response.data;
   } catch (error) {
     console.error(`Failed to fetch product with ID ${id} for editing:`, error);
     return null;
@@ -28,7 +25,9 @@ async function getProductForEdit(id: string): Promise<Product | null> {
 }
 
 export async function generateMetadata({ params }: EditPageProps): Promise<Metadata> {
-  const product = await getProductForEdit(params.id);
+  // 4. AWAIT the params object
+  const { id } = await params;
+  const product = await getProductForEdit(id);
   const title = product ? `Edit: ${product.name}` : 'Edit Product';
 
   return {
@@ -42,7 +41,9 @@ export async function generateMetadata({ params }: EditPageProps): Promise<Metad
 
 // This is a Server Component
 export default async function EditProductPage({ params }: EditPageProps) {
-  const product = await getProductForEdit(params.id);
+  // 5. AWAIT the params object
+  const { id } = await params;
+  const product = await getProductForEdit(id);
 
   if (!product) {
     notFound(); // Triggers the 404 page if product doesn't exist

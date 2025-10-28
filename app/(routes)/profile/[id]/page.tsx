@@ -1,44 +1,32 @@
-// app/(routes)/profile/[id]/page.tsx
-
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Body from "./body";
 import { PublicUserProfile, Product } from "@/lib/types";
+import apiClient from "@/lib/apiClient";
 
-// Define the shape of the props for this page component
-// FIX: The params object can be a Promise, so we adjust the type to match.
 interface PublicProfilePageProps {
   params: Promise<{ id: string }>;
 }
 
-// Server-Side Data Fetching Function (This function is correct, no changes needed)
 async function getUserData(id: string): Promise<{ user: PublicUserProfile, products: Product[] } | null> {
     try {
-        const [userRes, productsRes] = await Promise.all([
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${id}`),
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/public/seller/${id}`)
+        const [userResponse, productsResponse] = await Promise.all([
+            apiClient.users.getPublicProfileById(id),
+            apiClient.products.getBySellerIdPublic(id)
         ]);
         
-        if (!userRes.ok) {
-            // If the user is not found, we can exit early
-            return null;
-        }
-
-        const user: PublicUserProfile = await userRes.json();
-        // If products fail to fetch, we can still show the profile with an empty product list
-        const products: Product[] = productsRes.ok ? await productsRes.json() : [];
+        const user = userResponse.data;
+        const products = productsResponse.data;
 
         return { user, products };
 
     } catch (error) {
-        console.error("Failed to fetch user data for SSR:", error);
+        console.error(`[Profile Page] Failed to fetch data for user ID ${id}:`, error);
         return null;
     }
 }
 
-// Dynamic Metadata for SEO & Link Previews
 export async function generateMetadata({ params }: PublicProfilePageProps): Promise<Metadata> {
-    // FIX: Await the params object before destructuring from it.
     const { id } = await params;
     const data = await getUserData(id);
 
@@ -64,17 +52,13 @@ export async function generateMetadata({ params }: PublicProfilePageProps): Prom
     };
 }
 
-
-// The Main Page Component (Server Component)
 export default async function PublicProfilePage({ params }: PublicProfilePageProps) {
-    // FIX: Await the params object before destructuring from it.
     const { id } = await params;
     const data = await getUserData(id);
 
     if (!data) {
-        notFound(); // This will render the not-found.tsx file
+        notFound();
     }
 
-    // Pass the fetched data as props to the client component Body
     return <Body user={data.user} products={data.products} />;
 }
