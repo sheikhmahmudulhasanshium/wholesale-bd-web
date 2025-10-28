@@ -1,5 +1,3 @@
-// @/lib/types.ts
-
 import type { Metadata } from 'next';
 
 // --- Auth & User Types ---
@@ -92,6 +90,18 @@ export interface PricingTier {
 }
 
 // --- Media & Upload Types ---
+
+/**
+ * Represents a structured media item associated with a product.
+ * Based on the backend's `ProductMediaDto`.
+ */
+export interface ProductMedia {
+  _id: string;
+  url: string;
+  purpose: 'thumbnail' | 'preview';
+  priority: number;
+}
+
 export interface Media {
   _id: string;
   url: string;
@@ -113,7 +123,10 @@ export interface Product {
   name: string;
   name_bn?: string;
   description: string;
-  images?: string[]; // Note: For new features, consider fetching media separately
+  /** @deprecated The `images` array is for backward compatibility only. Use `thumbnail` and `previews`. */
+  images?: string[];
+  thumbnail: ProductMedia | null;
+  previews: ProductMedia[];
   sellerId: string;
   categoryId: string;
   zoneId: string;
@@ -121,19 +134,21 @@ export interface Product {
   stockQuantity: number;
   minimumOrderQuantity: number;
   unit: string;
-  status: "active" | "inactive" | "out_of_stock" | "pending_approval";
+  status: "active" | "inactive" | "archived";
   isActive: boolean;
   viewCount: number;
+  orderCount: number;
   createdAt: string;
   updatedAt: string;
-  brand?: string;
-  model?: string;
+  brand: string;
+  model: string;
   weight?: number;
   dimensions?: string;
   specifications?: string;
   sku?: string;
-  rating?: number;
-  reviewCount?: number;
+  rating: number;
+  reviewCount: number;
+  __v: number;
 }
 
 // --- Collection Types ---
@@ -178,6 +193,7 @@ export interface PaginatedProductsResponse {
 // --- OpenGraph Type Extension ---
 type BaseOpenGraph = NonNullable<Metadata['openGraph']>;
 
+// --- THIS IS THE CORRECTED LINE ---
 export type ExtendedOpenGraph = Omit<BaseOpenGraph, 'type'> & {
   type: 'product';
 };

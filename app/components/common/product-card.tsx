@@ -14,11 +14,9 @@ interface ProductCardProps {
   isEditable?: boolean;
 }
 
-// Note: This component is a duplicate of the one in /app/components/common/.
-// It is recommended to use a single component from a common directory.
 export const ProductCard: React.FC<ProductCardProps> = ({ product, language, isEditable = false }) => {
   const router = useRouter(); // <-- Initialize the router
-  
+
   const displayName = product.name; 
   
   const displayPrice = product.pricingTiers?.length > 0 

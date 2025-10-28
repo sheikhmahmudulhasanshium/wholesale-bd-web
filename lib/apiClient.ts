@@ -1,3 +1,4 @@
+// @/lib/apiClient.ts
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import { 
@@ -102,7 +103,7 @@ class ApiClient {
   };
 
   products = {
-    create: (data: FormData): Promise<{ data: Product }> => this.instance.post('/products', data),
+    create: (data: Partial<Product>): Promise<{ data: Product }> => this.instance.post('/products', data),
     getAll: (params: ProductQuery, signal?: AbortSignal): Promise<{ data: PaginatedProductsResponse }> => this.instance.get('/products', { params, signal }),
     getAllPublic: (signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get('/products/public/all', { signal }),
     getById: (id: string, signal?: AbortSignal): Promise<{ data: Product }> => this.instance.get(`/products/${id}`, { signal }),
@@ -110,10 +111,33 @@ class ApiClient {
     getByCategoryIdPublic: (categoryId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/category/${categoryId}`, { signal }),
     getByZoneIdPublic: (zoneId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/zone/${zoneId}`, { signal }),
     getBySellerIdPublic: (sellerId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => this.instance.get(`/products/public/seller/${sellerId}`, { signal }),
-    update: (id: string, data: FormData): Promise<{ data: Product }> => this.instance.patch(`/products/${id}`, data),
+    update: (id: string, data: Partial<Product>): Promise<{ data: Product }> => this.instance.patch(`/products/${id}`, data),
     delete: (id: string): Promise<void> => this.instance.delete(`/products/${id}`),
     getCategories: (): Promise<{ data: Category[] }> => this.instance.get('/categories'),
     getZones: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
+    
+    // New media management endpoints
+    uploadThumbnail: (productId: string, file: File): Promise<{ data: Product }> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return this.instance.post(`/products/${productId}/thumbnail/upload`, formData);
+    },
+    setThumbnailFromUrl: (productId: string, url: string): Promise<{ data: Product }> =>
+      this.instance.post(`/products/${productId}/thumbnail/from-url`, { url }),
+    
+    uploadPreview: (productId: string, file: File): Promise<{ data: Product }> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return this.instance.post(`/products/${productId}/previews/upload`, formData);
+    },
+    addPreviewFromUrl: (productId: string, url: string): Promise<{ data: Product }> =>
+      this.instance.post(`/products/${productId}/previews/from-url`, { url }),
+
+    updateMediaProperties: (productId: string, mediaId: string, data: { purpose?: 'thumbnail' | 'preview', priority?: number }): Promise<{ data: Product }> =>
+      this.instance.patch(`/products/${productId}/media/${mediaId}`, data),
+      
+    deleteMedia: (productId: string, mediaId: string): Promise<{ data: Product }> =>
+      this.instance.delete(`/products/${productId}/media/${mediaId}`),
   };
 
   zones = {

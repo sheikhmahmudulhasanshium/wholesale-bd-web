@@ -1,5 +1,8 @@
+// app/(routes)/profile/[id]/body.tsx
 "use client";
 
+import React from "react";
+import Link from "next/link";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 import { Header } from "@/app/components/common/header";
 import Footer from "@/app/components/common/footer";
@@ -9,17 +12,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CalendarDays, Mail, Phone, ShieldCheck, Tag } from "lucide-react";
 import { Product, PublicUserProfile } from "@/lib/types";
-import { ProductCard } from "../../home/product-card";
 import { useLanguage } from "@/app/components/contexts/language-context";
-import Link from "next/link";
+import { ProductCard } from "@/app/components/common/product-card";
 
-// Update props to remove `media` as it's now part of the `user` object
+// --- THIS IS THE FIX ---
+// Explicitly define the props that this component will receive.
 interface BodyProps {
     user: PublicUserProfile;
     products: Product[];
 }
 
+// Apply the BodyProps type to the component's function signature.
 export default function Body({ user, products }: BodyProps) {
+// --- END OF FIX ---
     const { language } = useLanguage();
 
     const getInitials = (displayName?: string) => {

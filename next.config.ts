@@ -22,6 +22,23 @@ const nextConfig: NextConfig = {
         hostname: 'www.deccanchronicle.com',
 
       }
+      ,
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+
+      },{
+        protocol: 'https',
+        hostname: 'png.pngtree.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.clickbd.com',
+        port: '',
+        pathname: '/**',
+      },
     ]
   },
   

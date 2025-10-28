@@ -1,4 +1,5 @@
-// FILE: app/(routes)/dashboard/add-product/page.tsx
+// app/(routes)/products/add-product/page.tsx
+
 "use client";
 
 import { useAuth } from "@/app/components/contexts/auth-context";
@@ -10,6 +11,11 @@ import { Header } from "@/app/components/common/header";
 import Footer from "@/app/components/common/footer";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import { Metadata } from 'next';
+
+// Note: generateMetadata can't be used in a "use client" file.
+// We should export metadata from a server component wrapper if needed.
+// For simplicity, we keep this as a client component.
 
 export default function AddProductPage() {
   const { user, isLoading } = useAuth();
@@ -19,9 +25,6 @@ export default function AddProductPage() {
       return <Skeleton className="w-full h-[500px] rounded-lg" />;
     }
 
-    // This form should only be accessible to approved sellers.
-    // Your backend's SellerApprovalGuard will handle blocking the API request,
-    // but we should also hide the UI for a better user experience.
     if (user?.role !== 'seller') {
       return (
         <div className="flex flex-col items-center justify-center text-center gap-4 p-8 border rounded-lg bg-card">

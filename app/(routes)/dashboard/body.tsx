@@ -230,7 +230,7 @@ export default function DashboardClientPage() {
             </p>
           </div>
           <Button asChild>
-            <Link href="/dashboard/add-product">
+            <Link href="/products/add-product">
               <PlusCircle className="mr-2 h-4 w-4" />
               {pageText.addNewProduct[language]}
             </Link>

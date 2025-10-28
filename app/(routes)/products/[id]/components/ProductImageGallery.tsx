@@ -1,27 +1,39 @@
+// app/(routes)/products/[id]/components/ProductImageGallery.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Media } from "@/lib/types";
+import { ProductMedia } from "@/lib/types";
 
 interface ProductImageGalleryProps {
-    images?: Media[];
+    allMedia: ProductMedia[]; 
     productName: string;
 }
 
-export const ProductImageGallery = ({ images, productName }: ProductImageGalleryProps) => {
-    const imageUrls = images?.map(img => img.url) || [];
-    const [selectedImage, setSelectedImage] = useState(imageUrls[0] || '/logo/logo.png');
+// This helper function removes any query parameters from a URL.
+const cleanUrl = (url: string) => {
+  try {
+    const urlObject = new URL(url);
+    return `${urlObject.origin}${urlObject.pathname}`;
+  } catch (error) {
+    // If it's not a valid URL (e.g., a local path like '/logo/png'), return it as is.
+    return url;
+  }
+};
 
+export const ProductImageGallery = ({ allMedia, productName }: ProductImageGalleryProps) => {
+    const [selectedImage, setSelectedImage] = useState(cleanUrl(allMedia[0]?.url || '/logo/logo.png'));
+
+    // This effect correctly handles component updates, including when media
+    // is loaded asynchronously from the fallback endpoint.
     useEffect(() => {
-        setSelectedImage(imageUrls[0] || '/logo/logo.png');
-    }, [images]);
+        setSelectedImage(cleanUrl(allMedia[0]?.url || '/logo/logo.png'));
+    }, [allMedia]);
 
-    const hasImages = imageUrls.length > 0;
+    const hasImages = allMedia.length > 0;
 
-    // Animation variants for the main image cross-fade (this part is fine)
     const mainImageVariants = {
         initial: { opacity: 0, scale: 0.95 },
         animate: { opacity: 1, scale: 1 },
@@ -29,16 +41,13 @@ export const ProductImageGallery = ({ images, productName }: ProductImageGallery
     };
 
     return (
-        // --- THE DEFINITIVE SOLUTION ---
-        // 1. The problematic 'variants' object has been removed.
-        // 2. Animation properties are now applied directly to the component.
         <motion.div 
             className="flex flex-col gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
         >
-            <div className="aspect-square w-full relative overflow-hidden rounded-lg bg-transparent">
+            <div className="aspect-square w-full relative overflow-hidden rounded-lg bg-transparent border">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={selectedImage}
@@ -61,21 +70,27 @@ export const ProductImageGallery = ({ images, productName }: ProductImageGallery
                 </AnimatePresence>
             </div>
 
-            {hasImages && imageUrls.length > 1 && (
+            {hasImages && allMedia.length > 1 && (
                 <div className="grid grid-cols-5 gap-2">
-                    {images?.map((mediaItem) => (
+                    {allMedia.map((mediaItem) => (
                         <motion.button
                             key={mediaItem._id}
-                            onClick={() => setSelectedImage(mediaItem.url)}
+                            onClick={() => setSelectedImage(cleanUrl(mediaItem.url))}
                             className={cn(
                                 "aspect-square relative rounded-md overflow-hidden border-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                                selectedImage === mediaItem.url ? "border-primary" : "border-transparent"
+                                selectedImage === cleanUrl(mediaItem.url) ? "border-primary" : "border-transparent"
                             )}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <Image src={mediaItem.url} alt={`${productName} thumbnail`} fill className="object-cover" />
+                            <Image 
+                              src={cleanUrl(mediaItem.url)} 
+                              alt={`${productName} thumbnail`} 
+                              fill 
+                              className="object-cover" 
+                              sizes="(max-width: 640px) 20vw, 10vw"
+                            />
                         </motion.button>
                     ))}
                 </div>

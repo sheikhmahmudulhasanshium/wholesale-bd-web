@@ -1,7 +1,9 @@
+// app/(routes)/profile/me/components/body.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image"; // <-- Import next/image for the media gallery
+import Image from "next/image";
 import { useAuth } from "@/app/components/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
@@ -13,16 +15,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-// --- vvvvvvv ICONS UPDATED vvvvvvv ---
-import { CalendarDays, Camera, Edit, Mail, Phone, ShieldCheck, Tag, MoreHorizontal, Eye, Images as ImagesIcon } from "lucide-react";
-// --- vvvvvvv TYPES UPDATED vvvvvvv ---
+import { CalendarDays, Camera, Edit, Mail, Phone, ShieldCheck, Tag, MoreHorizontal, Eye, Images as ImagesIcon, PlusCircle } from "lucide-react";
 import { PublicUserProfile, Product, GroupedMedia } from "@/lib/types";
 import apiClient from "@/lib/apiClient";
 import Link from "next/link";
 import { useLanguage } from "@/app/components/contexts/language-context";
-import { ProductCard } from "../../home/product-card";
-import { UploadImageModal } from "@/app/components/common/upload-image-modal";
+import { UploadImageModal } from "@/app/components/modals/upload-image-modal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ProductCard } from "../../home/product-card";
+// --- THIS IMPORT PATH IS CORRECTED FOR CONSISTENCY ---
 
 export default function Body() {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -33,10 +34,8 @@ export default function Body() {
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-  // --- vvvvvvv NEW STATE FOR UPLOADS vvvvvvv ---
   const [myUploads, setMyUploads] = useState<GroupedMedia | null>(null);
   const [isLoadingUploads, setIsLoadingUploads] = useState(true);
-  // --- ^^^^^^^ END OF NEW STATE ^^^^^^^ ---
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [uploadType, setUploadType] = useState<'profile' | 'background'>('profile');
@@ -65,13 +64,11 @@ export default function Body() {
         .catch(err => console.error("Failed to fetch user products", err))
         .finally(() => setIsLoadingProducts(false));
       
-      // --- vvvvvvv NEW FETCH CALL FOR UPLOADS vvvvvvv ---
       setIsLoadingUploads(true);
       apiClient.users.getMyUploads()
         .then(res => setMyUploads(res.data))
         .catch(err => console.error("Failed to fetch user uploads", err))
         .finally(() => setIsLoadingUploads(false));
-      // --- ^^^^^^^ END OF NEW FETCH CALL ^^^^^^^ ---
     }
   }, [user?._id, isAuthenticated, isAuthLoading, router]);
 
@@ -140,7 +137,7 @@ export default function Body() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile/me/settings">
+                      <Link href="/dashboard/settings">
                         <Edit className="mr-2 h-4 w-4" />
                         <span>Edit Profile</span>
                       </Link>
@@ -165,17 +162,50 @@ export default function Body() {
         <Separator className="my-8" />
         
         <div>
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-3"><Tag className="h-6 w-6 text-primary"/> My Products</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold flex items-center gap-3"><Tag className="h-6 w-6 text-primary"/> My Products</h2>
+            {user.role === 'seller' && (
+              <Button asChild>
+                {/* --- LINK FIXED HERE --- */}
+                <Link href="/products/add-product">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Create New Product
+                </Link>
+              </Button>
+            )}
+          </div>
+
           {isLoadingProducts && <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}</div>}
+          
           {!isLoadingProducts && myProducts.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {myProducts.map(product => <ProductCard key={product._id} product={product} language={language}/>)}
+              {myProducts.map(product => (
+                <ProductCard 
+                  key={product._id} 
+                  product={product} 
+                  language={language}
+                  isEditable={true}
+                />
+              ))}
             </div>
           )}
-          {!isLoadingProducts && myProducts.length === 0 && <p className="text-muted-foreground">You have not listed any products yet.</p>}
+          
+          {!isLoadingProducts && myProducts.length === 0 && (
+            <div className="text-center py-10 border-dashed border-2 rounded-lg">
+              <p className="text-muted-foreground">You have not listed any products yet.</p>
+              {user.role === 'seller' && (
+                <Button asChild className="mt-4">
+                  {/* --- LINK FIXED HERE --- */}
+                  <Link href="/products/add-product">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    List Your First Product
+                  </Link>
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* --- vvvvvvv NEW "MY MEDIA" SECTION vvvvvvv --- */}
         <Separator className="my-8" />
         <div>
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-3"><ImagesIcon className="h-6 w-6 text-primary"/> My Media</h2>
@@ -203,7 +233,6 @@ export default function Body() {
             <p className="text-muted-foreground">You have not uploaded any media yet.</p>
           )}
         </div>
-        {/* --- ^^^^^^^ END OF "MY MEDIA" SECTION ^^^^^^^ --- */}
       </main>
     </BasicPageProvider>
   );
