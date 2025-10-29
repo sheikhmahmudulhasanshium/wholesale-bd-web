@@ -131,9 +131,10 @@ export interface Product {
   rating: number;
   reviewCount: number;
   __v: number;
+  tags: string[]; // --- V NEW ---
 }
 
-// --- VVVVVV ADDED COLLECTION TYPES VVVVVV ---
+// --- Collection Types ---
 export interface CollectionProduct {
   product: Product;
   priority: number;
@@ -155,7 +156,6 @@ export interface Collection {
   updatedAt: string;
   __v: number;
 }
-// --- ^^^^^^ END OF ADDED TYPES ^^^^^^ ---
 
 // --- API Query & Response Types ---
 export interface ProductQuery {
@@ -184,3 +184,39 @@ type BaseOpenGraph = NonNullable<Metadata['openGraph']>;
 export type ExtendedOpenGraph = Omit<BaseOpenGraph, 'type'> & {
   type: 'product';
 };
+
+// --- V NEW: Search and Discovery Types ---
+export interface SearchResponse {
+  data: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  suggestion?: string;
+}
+
+export interface DiscoverySection {
+  title: string;
+  items: Product[];
+}
+
+export interface DiscoveryResponse {
+  recentlyViewed?: Product[];
+  recommendedForYou?: DiscoverySection;
+  trendingNow?: DiscoverySection;
+}
+// @/lib/types.ts
+// ... (all existing types remain the same)
+
+// --- V NEW: Add UserActivity type at the end of the file ---
+export interface UserActivity {
+  _id: string;
+  userId: string;
+  viewedProducts: string[]; // Array of product IDs
+  likedCategories: string[]; // Array of category IDs
+  recentSearches: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+// --- ^ END of NEW ---

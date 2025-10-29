@@ -1,8 +1,7 @@
 // app/(routes)/profile/me/components/body.tsx
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import { useAuth } from "@/app/components/contexts/auth-context";
 import { useRouter } from "next/navigation";
@@ -15,15 +14,80 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Camera, Edit, Mail, Phone, ShieldCheck, Tag, MoreHorizontal, Eye, Images as ImagesIcon, PlusCircle } from "lucide-react";
-import { PublicUserProfile, Product, GroupedMedia } from "@/lib/types";
+import { CalendarDays, Camera, Edit, Mail, Phone, ShieldCheck, Tag, MoreHorizontal, Eye, Images as ImagesIcon, PlusCircle, Sparkles } from "lucide-react";
+import { PublicUserProfile, Product, GroupedMedia, DiscoveryResponse } from "@/lib/types";
 import apiClient from "@/lib/apiClient";
 import Link from "next/link";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import { UploadImageModal } from "@/app/components/modals/upload-image-modal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ProductCard } from "../../home/product-card";
-// --- THIS IMPORT PATH IS CORRECTED FOR CONSISTENCY ---
+import { useDiscoveryFeed } from "@/app/components/hooks/use-discovery-feed"; // --- V NEW ---
+import { ProductCard } from "@/app/components/common/product-card";
+
+
+// --- V NEW: Discovery Feed Component (can be moved to its own file later) ---
+const DiscoveryFeed = () => {
+  const { data: feed, isLoading } = useDiscoveryFeed();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-8 w-1/3 mb-4" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col space-y-2">
+              <Skeleton className="aspect-square w-full" />
+              <Skeleton className="h-4 w-4/5" />
+              <Skeleton className="h-6 w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!feed) return null;
+
+  const sections = [
+    feed.recommendedForYou,
+    feed.trendingNow,
+  ].filter(Boolean);
+
+  if (sections.length === 0 && (!feed.recentlyViewed || feed.recentlyViewed.length === 0)) {
+    return null;
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold flex items-center gap-3 mb-4"><Sparkles className="h-6 w-6 text-primary"/> For You</h2>
+      {feed.recentlyViewed && feed.recentlyViewed.length > 0 && (
+        <section className="mb-8">
+          <h3 className="text-xl font-semibold tracking-tight mb-4">Recently Viewed</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {feed.recentlyViewed.map(product => (
+              <ProductCard key={`recent-${product._id}`} product={product} language="en" />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {sections.map(section => (
+        section && section.items.length > 0 && (
+          <section key={section.title} className="mb-8">
+            <h3 className="text-xl font-semibold tracking-tight mb-4">{section.title}</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {section.items.map(product => (
+                <ProductCard key={`${section.title}-${product._id}`} product={product} language="en" />
+              ))}
+            </div>
+          </section>
+        )
+      ))}
+    </div>
+  );
+};
+// --- ^ END of NEW ---
+
 
 export default function Body() {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -103,6 +167,7 @@ export default function Body() {
         uploadType={uploadType}
       />
       <main className="container mx-auto max-w-5xl py-8 px-4">
+        {/* Profile Card Section (Unchanged) */}
         <div className="relative mb-[-4rem] h-48 md:h-64 rounded-t-lg bg-muted bg-cover bg-center" style={backgroundStyle}>
             <Button onClick={() => handleUploadClick('background')} size="sm" variant="secondary" className="absolute bottom-2 right-2">
                 <Camera className="mr-2 h-4 w-4" /> Change Cover
@@ -158,15 +223,20 @@ export default function Body() {
             {user.businessDescription && <p className="mt-4">{user.businessDescription}</p>}
           </CardContent>
         </Card>
-
+        
+        {/* --- V NEW: Discovery Feed Section --- */}
+        <Separator className="my-8" />
+        <DiscoveryFeed />
+        {/* --- ^ END of NEW --- */}
+        
         <Separator className="my-8" />
         
+        {/* My Products Section (Unchanged) */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold flex items-center gap-3"><Tag className="h-6 w-6 text-primary"/> My Products</h2>
             {user.role === 'seller' && (
               <Button asChild>
-                {/* --- LINK FIXED HERE --- */}
                 <Link href="/products/add-product">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create New Product
@@ -174,9 +244,7 @@ export default function Body() {
               </Button>
             )}
           </div>
-
           {isLoadingProducts && <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}</div>}
-          
           {!isLoadingProducts && myProducts.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {myProducts.map(product => (
@@ -189,13 +257,11 @@ export default function Body() {
               ))}
             </div>
           )}
-          
           {!isLoadingProducts && myProducts.length === 0 && (
             <div className="text-center py-10 border-dashed border-2 rounded-lg">
               <p className="text-muted-foreground">You have not listed any products yet.</p>
               {user.role === 'seller' && (
                 <Button asChild className="mt-4">
-                  {/* --- LINK FIXED HERE --- */}
                   <Link href="/products/add-product">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     List Your First Product
@@ -207,6 +273,8 @@ export default function Body() {
         </div>
 
         <Separator className="my-8" />
+
+        {/* My Media Section (Unchanged) */}
         <div>
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-3"><ImagesIcon className="h-6 w-6 text-primary"/> My Media</h2>
           {isLoadingUploads && (

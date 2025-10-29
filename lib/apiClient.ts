@@ -1,3 +1,4 @@
+// @/lib/apiClient.ts
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import { 
@@ -13,6 +14,9 @@ import {
   Media,
   Collection,
   ProductMedia,
+  SearchResponse,
+  DiscoveryResponse,
+  UserActivity
 } from './types';
 
 interface ApiErrorResponse {
@@ -91,7 +95,7 @@ class ApiClient {
   }
 
   private _transformProductShape = (productData: RawProductData): Product => {
-    if (productData && 'thumbnail' in productData) {
+    if (productData && 'thumbnail' in productData && 'previews' in productData) {
       return productData as Product;
     }
 
@@ -101,6 +105,7 @@ class ApiClient {
     const thumbnail = sortedMedia.find(m => m.purpose === 'thumbnail') || null;
     const previews = sortedMedia.filter(m => m.purpose === 'preview');
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { media: _media, ...rest } = productData;
 
     return { ...rest, thumbnail, previews } as Product;
@@ -122,6 +127,42 @@ class ApiClient {
     resetPassword: (data: { token: string; newPassword: string }) =>
       this.instance.post('/auth/reset-password', data),
   };
+  
+  search = {
+    getResults: async (params: { q: string; page?: number; limit?: number }, signal?: AbortSignal): Promise<{ data: SearchResponse }> => {
+        type RawSearchResponse = Omit<SearchResponse, 'data'> & { data: RawProductData[] };
+        const response = await this.instance.get<RawSearchResponse>('/search', { params, signal });
+        response.data.data = response.data.data.map(this._transformProductShape);
+        return response as unknown as { data: SearchResponse };
+    },
+    getDiscoveryFeed: async (signal?: AbortSignal): Promise<{ data: DiscoveryResponse }> => {
+        type RawDiscoveryResponse = {
+          recentlyViewed?: RawProductData[];
+          recommendedForYou?: { title: string; items: RawProductData[] };
+          trendingNow?: { title: string; items: RawProductData[] };
+        }
+        const response = await this.instance.get<RawDiscoveryResponse>('/me/discover', { signal });
+        
+        const transformedData: DiscoveryResponse = {};
+        if (response.data.recentlyViewed) {
+          transformedData.recentlyViewed = response.data.recentlyViewed.map(this._transformProductShape);
+        }
+        if (response.data.recommendedForYou) {
+          transformedData.recommendedForYou = {
+            title: response.data.recommendedForYou.title,
+            items: response.data.recommendedForYou.items.map(this._transformProductShape)
+          };
+        }
+        if (response.data.trendingNow) {
+          transformedData.trendingNow = {
+            title: response.data.trendingNow.title,
+            items: response.data.trendingNow.items.map(this._transformProductShape)
+          };
+        }
+        
+        return { data: transformedData };
+    }
+  };
 
   products = {
     create: (data: Partial<Product>): Promise<{ data: Product }> => this.instance.post('/products', data),
@@ -132,6 +173,9 @@ class ApiClient {
     getCategories: (): Promise<{ data: Category[] }> => this.instance.get('/categories'),
     getZones: (): Promise<{ data: Zone[] }> => this.instance.get('/zones'),
     
+    addTags: (productId: string, tags: string[]): Promise<{ data: Product }> =>
+      this.instance.post(`/products/${productId}/tags`, { tags }),
+
     getAllPublic: async (signal?: AbortSignal): Promise<{ data: Product[] }> => {
         const response = await this.instance.get<RawProductData[]>('/products/public/all', { signal });
         response.data = response.data.map(this._transformProductShape);
@@ -158,6 +202,11 @@ class ApiClient {
         return response as unknown as { data: Product[] };
     },
     
+    // --- VVVVVV FIX: Added missing method VVVVVV ---
+    getPublicCount: (signal?: AbortSignal): Promise<{ data: { totalProducts: number } }> =>
+      this.instance.get('/products/public/count', { signal }),
+    // --- ^^^^^^ END OF FIX ^^^^^^ ---
+
     uploadThumbnail: (productId: string, file: File): Promise<{ data: Product }> => {
       const formData = new FormData();
       formData.append('file', file);
@@ -202,11 +251,18 @@ class ApiClient {
   };
 
   users = {
+     getMyActivity: (signal?: AbortSignal): Promise<{ data: UserActivity }> =>
+      this.instance.get('/me/activity', { signal }),
     getPublicProfileById: (userId: string, signal?: AbortSignal): Promise<{ data: PublicUserProfile }> =>
       this.instance.get(`/users/${userId}`, { signal }),
     
     getMyUploads: (signal?: AbortSignal): Promise<{ data: GroupedMedia }> =>
       this.instance.get('/users/me/uploads', { signal }),
+
+    // --- VVVVVV FIX: Added missing method VVVVVV ---
+    getTotalCount: (signal?: AbortSignal): Promise<{ data: { totalUsers: number } }> =>
+      this.instance.get('/users/count', { signal }),
+    // --- ^^^^^^ END OF FIX ^^^^^^ ---
 
     uploadProfilePicture: (file: File): Promise<{ data: Media }> => {
       const formData = new FormData();

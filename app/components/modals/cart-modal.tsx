@@ -39,7 +39,9 @@ export const AddToCartModal = ({ isOpen, onOpenChange, product }: AddToCartModal
     
     const numberFormatter = useMemo(() => new Intl.NumberFormat(language === 'bn' ? 'bn-BD' : 'en-US'), [language]);
     const currencyFormatter = useMemo(() => new Intl.NumberFormat(language === "bn" ? "bn-BD" : "en-US", { style: "currency", currency: "BDT" }), [language]);
-    const t = {
+
+    // --- V FIX: Wrap the 't' object in useMemo ---
+    const t = useMemo(() => ({
         stock: language === 'bn' ? 'স্টক' : 'Stock',
         orderQuantity: language === 'bn' ? 'অর্ডারের পরিমাণ' : 'Order Quantity',
         pricingTiers: language === 'bn' ? 'মূল্য তালিকা' : 'Pricing Tiers',
@@ -54,7 +56,8 @@ export const AddToCartModal = ({ isOpen, onOpenChange, product }: AddToCartModal
         errorIsOwner: language === 'bn' ? 'আপনি নিজের পণ্য কার্টে যোগ করতে পারবেন না।' : 'You cannot add your own product to the cart.',
         errorMinQuantity: language === 'bn' ? 'সর্বনিম্ন অর্ডারের পরিমাণ {quantity}।' : 'Minimum order quantity is {quantity}.',
         errorMaxStock: language === 'bn' ? 'স্টকে {quantity} এর বেশি নেই।' : `Cannot exceed available stock of {quantity}.`,
-    };
+    }), [language]);
+    // --- ^ END of FIX ---
 
     const pricePerUnit = useMemo(() => {
         let activePrice = sortedTiers[0]?.pricePerUnit || 0;
@@ -110,12 +113,11 @@ export const AddToCartModal = ({ isOpen, onOpenChange, product }: AddToCartModal
             return;
         }
 
-        // --- VVVVVV THIS IS THE NEW JSON PAYLOAD VVVVVV ---
         const cartPayload = {
             productId: product._id,
             productName: product.name,
             sellerId: product.sellerId,
-            customerId: user?._id, // The ID of the currently logged-in user
+            customerId: user?._id,
             orderAmount: orderQuantity,
             sellerZone: product.zoneId,
             stockAmount: product.stockQuantity,
@@ -124,10 +126,8 @@ export const AddToCartModal = ({ isOpen, onOpenChange, product }: AddToCartModal
             timestamp: new Date().toISOString(),
         };
 
-        // Log the JSON object to the console for future API development
         console.log("--- Cart Item Payload (for future API) ---");
         console.log(JSON.stringify(cartPayload, null, 2));
-        // --- ^^^^^^ END OF NEW JSON PAYLOAD ^^^^^^ ---
 
         toast.success(t.toastSuccessTitle, { 
             description: t.toastSuccessDescription,

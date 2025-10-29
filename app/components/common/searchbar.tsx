@@ -1,22 +1,28 @@
+// @/app/components/common/searchbar.tsx
 'use client';
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation"; // --- V NEW ---
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SearchResultPreview } from "../modals/search-results-preview";
+// SearchResultPreview is no longer needed here
+// import { SearchResultPreview } from "../modals/search-results-preview";
 
 export function ResponsiveSearchBar({
   breakpointAdjustPercent = 0,
 }: {
   breakpointAdjustPercent?: number;
 }) {
+  const router = useRouter(); // --- V NEW ---
+  const searchParams = useSearchParams(); // --- V NEW ---
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  // --- V MODIFIED: Initialize query from URL ---
+  const [query, setQuery] = useState(searchParams.get('q') || "");
   const [isDesktop, setIsDesktop] = useState(false);
-  const [submittedQuery, setSubmittedQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const baseBreakpointPx = 540;
@@ -34,19 +40,22 @@ export function ResponsiveSearchBar({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
-
-    setSubmittedQuery(query.trim());
-    setIsModalOpen(false);
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return;
+    
+    // --- V MODIFIED: Navigate to search page ---
+    router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+    setIsModalOpen(false); // Close modal on mobile after search
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
-
-  const handleClosePreview = () => {
-    setSubmittedQuery("");
-  };
+  
+  // This effect ensures the input updates if the user navigates back/forward
+  useEffect(() => {
+    setQuery(searchParams.get('q') || '');
+  }, [searchParams]);
 
   const searchInputUI = (
     <form onSubmit={handleSubmit} className="relative w-full">
@@ -102,11 +111,7 @@ export function ResponsiveSearchBar({
           {isModalOpen && renderMobileModal}
         </>
       )}
-
-      {/* Search Result Preview (always positioned under input/modal) */}
-      {submittedQuery && (
-        <SearchResultPreview query={submittedQuery} onClose={handleClosePreview} />
-      )}
+      {/* The SearchResultPreview component is removed as we navigate to a new page */}
     </div>
   );
 }
