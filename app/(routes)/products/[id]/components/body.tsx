@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // <-- 1. IMPORT useRouter
 import { AxiosError } from "axios";
+import { toast } from "sonner"; // <-- 2. IMPORT toast
 import {
   AlertTriangle, MapPin, Package as PackageIcon, DollarSign as DollarSignIcon, ShoppingCart, UserCircle, ShieldCheck, Star, Eye, MessageSquare, Weight, Scan, Ruler, CalendarDays
 } from "lucide-react";
@@ -23,6 +25,7 @@ import { AddToCartModal } from "@/app/components/modals/cart-modal";
 import { Separator } from "@/components/ui/separator";
 import { ProductImageGallery } from "./ProductImageGallery";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/app/components/contexts/auth-context"; // <-- 3. IMPORT useAuth
 
 interface BodyProps {
   id: string;
@@ -86,7 +89,7 @@ const SellerInfoCard = ({ sellerId }: { sellerId: string }) => {
   return ( <Card className="h-fit"><CardHeader><CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6" /> Seller Information</CardTitle></CardHeader><CardContent className="space-y-4"><div className="flex items-center gap-4"><Avatar className="h-16 w-16 border"><AvatarImage src={seller.profilePicture ?? undefined} alt={seller.displayName} /><AvatarFallback>{getInitials(seller.displayName)}</AvatarFallback></Avatar><div><p className="text-lg font-bold">{seller.displayName}</p>{seller.contactName && <p className="text-sm text-muted-foreground">{seller.contactName}</p>}</div></div>{seller.isTrustedUser && (<Badge variant="secondary" className="w-full justify-center py-2 text-base font-semibold border-green-500 text-green-600"><ShieldCheck className="h-5 w-5 mr-2" /> Trusted Seller</Badge>)}{memberSinceFormatted && (<div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t"><CalendarDays className="h-4 w-4" /> Member since {memberSinceFormatted}</div>)}</CardContent><CardFooter><Button variant="outline" className="w-full" asChild><Link href={`/profile/${seller._id}`}>View Profile</Link></Button></CardFooter></Card> );
 };
 
-const ProductDetails = ({ product, allMedia, isMediaLoading, onAddToCartClick }: { product: Product, allMedia: ProductMedia[], isMediaLoading: boolean, onAddToCartClick: () => void }) => {
+const ProductDetails = ({ product, allMedia, isMediaLoading, onAddToCartClick, isOwner }: { product: Product, allMedia: ProductMedia[], isMediaLoading: boolean, onAddToCartClick: () => void, isOwner: boolean }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-12 space-y-8 lg:space-y-0">
         <div className="lg:col-span-7 space-y-8">
@@ -100,7 +103,22 @@ const ProductDetails = ({ product, allMedia, isMediaLoading, onAddToCartClick }:
             <ProductHeader name={product.name} brand={product.brand} model={product.model} />
             <ProductStats rating={product.rating || 0} reviewCount={product.reviewCount || 0} viewCount={product.viewCount || 0} />
             <Card><CardHeader><CardTitle className="flex items-center gap-2"><DollarSignIcon className="h-6 w-6" /> Pricing</CardTitle><CardDescription>Minimum order: {product.minimumOrderQuantity} {product.unit}(s)</CardDescription></CardHeader><CardContent><PricingTiersList tiers={product.pricingTiers} unit={product.unit} /></CardContent></Card>
-            <Card><CardContent className="pt-6 space-y-4"><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><PackageIcon className="h-5 w-5" /> In Stock:</div><Badge variant={product.stockQuantity > 0 ? "default" : "destructive"}>{product.stockQuantity} {product.unit}(s)</Badge></div><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><MapPin className="h-5 w-5" /> Shipping From:</div><span className="font-semibold"><ZoneDisplay zoneId={product.zoneId} /></span></div><Button size="lg" className="w-full text-lg mt-4 h-12" onClick={onAddToCartClick}><ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart</Button></CardContent></Card>
+            <Card><CardContent className="pt-6 space-y-4"><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><PackageIcon className="h-5 w-5" /> In Stock:</div><Badge variant={product.stockQuantity > 0 ? "default" : "destructive"}>{product.stockQuantity} {product.unit}(s)</Badge></div><div className="flex justify-between items-center"><div className="flex items-center gap-3 text-sm font-medium text-muted-foreground"><MapPin className="h-5 w-5" /> Shipping From:</div><span className="font-semibold"><ZoneDisplay zoneId={product.zoneId} /></span></div>
+                <Button 
+                  size="lg" 
+                  className="w-full text-lg mt-4 h-12" 
+                  onClick={onAddToCartClick}
+                  disabled={isOwner}
+                >
+                  {isOwner ? (
+                    "This is your product"
+                  ) : (
+                    <>
+                      <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                    </>
+                  )}
+                </Button>
+            </CardContent></Card>
             <SellerInfoCard sellerId={product.sellerId} />
         </div>
     </div>
@@ -108,6 +126,8 @@ const ProductDetails = ({ product, allMedia, isMediaLoading, onAddToCartClick }:
 };
 
 export default function ProductBody({ id }: BodyProps) {
+  const { user, isAuthenticated } = useAuth(); // <-- 4. GET user AND isAuthenticated STATUS
+  const router = useRouter(); // <-- 5. INITIALIZE THE ROUTER
   const { data: product, isLoading: isProductLoading, error: productError } = useProduct(id);
   const [allMedia, setAllMedia] = useState<ProductMedia[]>([]);
   const [isMediaLoading, setIsMediaLoading] = useState(true);
@@ -118,11 +138,29 @@ export default function ProductBody({ id }: BodyProps) {
     setIsMounted(true);
   }, []);
 
-  // --- THIS IS THE SIMPLIFIED MEDIA PROCESSING LOGIC ---
+  const isOwner = useMemo(() => {
+    return !!(user && product && user._id === product.sellerId);
+  }, [user, product]);
+  
+  // --- 6. IMPLEMENT THE NEW CLICK HANDLER LOGIC ---
+  const handleAddToCartClick = () => {
+    if (isAuthenticated) {
+      // If user is logged in and not the owner, open the modal
+      if (isOwner) {
+        toast.error("You cannot add your own product to the cart.");
+        return;
+      }
+      setIsModalOpen(true);
+    } else {
+      // If user is not logged in, show a message and redirect
+      toast.info("Please log in to add items to your cart.");
+      router.push('/login');
+    }
+  };
+
   useEffect(() => {
-    // Don't run if the main product data isn't loaded yet
     if (!product) {
-      if (!isProductLoading) setIsMediaLoading(false);
+      if (!isProductLoading) return;
       return;
     }
 
@@ -130,21 +168,18 @@ export default function ProductBody({ id }: BodyProps) {
       setIsMediaLoading(true);
       let media: ProductMedia[] = [];
 
-      // Priority 1: Use the new thumbnail/previews fields if they exist
       if (product.thumbnail) media.push(product.thumbnail);
       if (product.previews) media.push(...product.previews);
       
-      // Priority 2: If still no images, use the fallback API endpoint
       if (media.length === 0) {
         try {
           console.log(`Product ${product._id} has no embedded media. Fetching from fallback endpoint...`);
           const response = await apiClient.uploads.getMediaForEntity('Product', product._id);
           if (response.data.images && response.data.images.length > 0) {
-            // Transform the fallback data into the format the gallery component needs
             media = response.data.images.map((img, index) => ({
               _id: img._id,
               url: img.url,
-              purpose: index === 0 ? 'thumbnail' : 'preview', // Assume first is thumbnail
+              purpose: index === 0 ? 'thumbnail' : 'preview',
               priority: index,
             }));
           }
@@ -153,13 +188,12 @@ export default function ProductBody({ id }: BodyProps) {
         }
       }
       
-      setAllMedia(media.sort((a, b) => a.priority - b.priority)); // Ensure sorted
+      setAllMedia(media.sort((a, b) => a.priority - b.priority));
       setIsMediaLoading(false);
     };
 
     processMedia();
   }, [product, isProductLoading]);
-  // --- END OF NEW LOGIC ---
 
   const isLoading = !isMounted || isProductLoading;
   const error = productError;
@@ -175,13 +209,19 @@ export default function ProductBody({ id }: BodyProps) {
     }
 
     if (error || !product) {
-      const errorMessage = error instanceof AxiosError ? error.response?.data?.message : "The product you're looking for doesn't exist or has been removed.";
+      const errorMessage = error instanceof AxiosError ? error.response?.data?.message : "The product you're for doesn't exist or has been removed.";
       return <Card className="border-destructive max-w-lg mx-auto"><CardHeader className="text-center"><CardTitle className="flex items-center justify-center gap-3 text-destructive"><AlertTriangle size={48} />Product Not Found</CardTitle><CardDescription>{errorMessage}</CardDescription></CardHeader><CardContent className="flex justify-center gap-3 mt-4"><Button variant="outline" onClick={() => window.history.back()}>Go Back</Button><Button asChild><Link href="/products">See All Products</Link></Button></CardContent></Card>;
     }
 
     return (
         <>
-            <ProductDetails product={product} allMedia={allMedia} isMediaLoading={isMediaLoading} onAddToCartClick={() => setIsModalOpen(true)} />
+            <ProductDetails 
+              product={product} 
+              allMedia={allMedia} 
+              isMediaLoading={isMediaLoading} 
+              onAddToCartClick={handleAddToCartClick} 
+              isOwner={isOwner}
+            />
             <AddToCartModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} product={product} />
         </>
     );

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { Minus, Plus, X, ShoppingCart } from "lucide-react";
+import { Minus, Plus, X, ShoppingCart, Ban } from "lucide-react";
 
 import { Product } from "@/lib/types";
 import { useLanguage } from "@/app/components/contexts/language-context";
@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "../contexts/auth-context";
+import { Slider } from "@/components/ui/slider";
 
 interface AddToCartModalProps {
   isOpen: boolean;
@@ -21,54 +23,116 @@ interface AddToCartModalProps {
 
 export const AddToCartModal = ({ isOpen, onOpenChange, product }: AddToCartModalProps) => {
     const { language } = useLanguage();
+    const { user } = useAuth();
     const sortedTiers = useMemo(() => product.pricingTiers.sort((a, b) => a.minQuantity - b.minQuantity), [product.pricingTiers]);
 
-    // --- Base price is the price of the first tier ---
-    const basePrice = sortedTiers[0]?.pricePerUnit || 0;
-
-    const [selectedTierKey, setSelectedTierKey] = useState<string>(sortedTiers[0]?.minQuantity.toString() || 'custom');
-    const [customQuantity, setCustomQuantity] = useState<number | string>(product.minimumOrderQuantity);
+    const [orderQuantity, setOrderQuantity] = useState<number>(product.minimumOrderQuantity);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { onOpenChange(false); } };
         if (isOpen) {
             document.addEventListener('keydown', handleKeyDown);
-            setSelectedTierKey(sortedTiers[0]?.minQuantity.toString() || 'custom');
-            setCustomQuantity(product.minimumOrderQuantity);
+            setOrderQuantity(product.minimumOrderQuantity);
         }
         return () => { document.removeEventListener('keydown', handleKeyDown); };
-    }, [isOpen, onOpenChange, product.minimumOrderQuantity, sortedTiers]);
-
-    const formatter = new Intl.NumberFormat(language === "bn" ? "bn-BD" : "en-US", { style: "currency", currency: "BDT" });
-
-    const quantity = useMemo(() => (selectedTierKey === 'custom' ? Number(customQuantity) || 0 : Number(selectedTierKey) || 0), [selectedTierKey, customQuantity]);
+    }, [isOpen, onOpenChange, product.minimumOrderQuantity]);
     
+    const numberFormatter = useMemo(() => new Intl.NumberFormat(language === 'bn' ? 'bn-BD' : 'en-US'), [language]);
+    const currencyFormatter = useMemo(() => new Intl.NumberFormat(language === "bn" ? "bn-BD" : "en-US", { style: "currency", currency: "BDT" }), [language]);
+    const t = {
+        stock: language === 'bn' ? 'স্টক' : 'Stock',
+        orderQuantity: language === 'bn' ? 'অর্ডারের পরিমাণ' : 'Order Quantity',
+        pricingTiers: language === 'bn' ? 'মূল্য তালিকা' : 'Pricing Tiers',
+        qty: language === 'bn' ? 'পরিমাণ' : 'Qty',
+        save: language === 'bn' ? 'বাঁচান' : 'SAVE',
+        totalPrice: language === 'bn' ? 'মোট মূল্য' : 'Total Price',
+        addToCart: language === 'bn' ? 'কার্টে যোগ করুন' : 'Add to Cart',
+        yourProduct: language === 'bn' ? 'এটি আপনার পণ্য' : 'This is your product',
+        cancel: language === 'bn' ? 'বাতিল করুন' : 'Cancel',
+        toastSuccessTitle: language === 'bn' ? 'আপনার পণ্য কার্টে যোগ করা হয়েছে।' : 'Your item has been added to the cart.',
+        toastSuccessDescription: language === 'bn' ? 'আরও পণ্য যোগ করতে কেনাকাটা চালিয়ে যেতে পারেন। আমাদের টিম শীঘ্রই আপনার সাথে যোগাযোগ করবে।' : 'You can continue shopping to add more products. Our team will contact you soon.',
+        errorIsOwner: language === 'bn' ? 'আপনি নিজের পণ্য কার্টে যোগ করতে পারবেন না।' : 'You cannot add your own product to the cart.',
+        errorMinQuantity: language === 'bn' ? 'সর্বনিম্ন অর্ডারের পরিমাণ {quantity}।' : 'Minimum order quantity is {quantity}.',
+        errorMaxStock: language === 'bn' ? 'স্টকে {quantity} এর বেশি নেই।' : `Cannot exceed available stock of {quantity}.`,
+    };
+
     const pricePerUnit = useMemo(() => {
         let activePrice = sortedTiers[0]?.pricePerUnit || 0;
-        for (const tier of sortedTiers) if (quantity >= tier.minQuantity) activePrice = tier.pricePerUnit;
-        return activePrice;
-    }, [quantity, sortedTiers]);
-
-    const totalPrice = quantity * pricePerUnit;
-    const isMinQuantityMet = quantity >= product.minimumOrderQuantity;
-    const isStockAvailable = quantity <= product.stockQuantity;
-    const errorMessage = !isMinQuantityMet ? `Minimum order quantity is ${product.minimumOrderQuantity}.` : !isStockAvailable ? `Cannot exceed available stock of ${product.stockQuantity}.` : null;
-
-    const handleCustomQuantityChange = (value: string) => {
-        if (value === '' || /^[0-9]+$/.test(value)) {
-            const numValue = Math.min(Number(value), product.stockQuantity);
-            setCustomQuantity(value === '' ? '' : numValue);
+        for (const tier of sortedTiers) {
+            if (orderQuantity >= tier.minQuantity) {
+                activePrice = tier.pricePerUnit;
+            }
         }
-    };
-    
-    const adjustCustomQuantity = (amount: number) => {
-        const currentQty = Number(customQuantity) || 0;
-        const newQty = Math.max(1, Math.min(currentQty + amount, product.stockQuantity));
-        setCustomQuantity(newQty);
+        return activePrice;
+    }, [orderQuantity, sortedTiers]);
+
+    const activeTierMinQuantity = useMemo(() => {
+        let activeMinQty = 0;
+        for (const tier of sortedTiers) {
+            if (orderQuantity >= tier.minQuantity) {
+                activeMinQty = tier.minQuantity;
+            }
+        }
+        return activeMinQty;
+    }, [orderQuantity, sortedTiers]);
+
+    const totalPrice = orderQuantity * pricePerUnit;
+    const isOwner = user?._id === product.sellerId;
+
+    const errorMessage = useMemo(() => {
+        if (isOwner) {
+            return t.errorIsOwner;
+        }
+        if (orderQuantity < product.minimumOrderQuantity) {
+            return t.errorMinQuantity.replace('{quantity}', numberFormatter.format(product.minimumOrderQuantity));
+        }
+        if (orderQuantity > product.stockQuantity) {
+            return t.errorMaxStock.replace('{quantity}', numberFormatter.format(product.stockQuantity));
+        }
+        return null;
+    }, [isOwner, orderQuantity, product.minimumOrderQuantity, product.stockQuantity, t, numberFormatter]);
+
+    const handleQuantityChange = (newQuantity: number) => {
+        if (isNaN(newQuantity)) {
+            setOrderQuantity(product.minimumOrderQuantity);
+            return;
+        }
+        const clampedQuantity = Math.max(
+            product.minimumOrderQuantity,
+            Math.min(newQuantity, product.stockQuantity)
+        );
+        setOrderQuantity(clampedQuantity);
     };
 
     const handleConfirm = () => {
-        toast.success(`${quantity} x ${product.name} added to cart!`, { description: `Total: ${formatter.format(totalPrice)}` });
+        if (errorMessage) {
+            toast.error(errorMessage);
+            return;
+        }
+
+        // --- VVVVVV THIS IS THE NEW JSON PAYLOAD VVVVVV ---
+        const cartPayload = {
+            productId: product._id,
+            productName: product.name,
+            sellerId: product.sellerId,
+            customerId: user?._id, // The ID of the currently logged-in user
+            orderAmount: orderQuantity,
+            sellerZone: product.zoneId,
+            stockAmount: product.stockQuantity,
+            pricePerUnit: pricePerUnit,
+            totalPrice: totalPrice,
+            timestamp: new Date().toISOString(),
+        };
+
+        // Log the JSON object to the console for future API development
+        console.log("--- Cart Item Payload (for future API) ---");
+        console.log(JSON.stringify(cartPayload, null, 2));
+        // --- ^^^^^^ END OF NEW JSON PAYLOAD ^^^^^^ ---
+
+        toast.success(t.toastSuccessTitle, { 
+            description: t.toastSuccessDescription,
+            duration: 5000
+        });
         onOpenChange(false);
     };
 
@@ -78,36 +142,78 @@ export const AddToCartModal = ({ isOpen, onOpenChange, product }: AddToCartModal
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={() => onOpenChange(false)}>
             <div className="relative flex flex-col w-full max-w-md lg:max-w-lg max-h-[90vh] bg-background rounded-lg shadow-lg" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => onOpenChange(false)} className="absolute top-3 right-3 p-1 rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground z-10"><X className="h-5 w-5" /><span className="sr-only">Close</span></button>
-                <div className="p-6 border-b"><h2 className="text-lg font-semibold text-foreground">{product.name}</h2><p className="text-sm text-muted-foreground">Add to your cart</p><Badge variant="secondary" className="mt-2">Stock: {product.stockQuantity}</Badge></div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                    <RadioGroup value={selectedTierKey} onValueChange={setSelectedTierKey} className="space-y-3">
-                        {sortedTiers.map(tier => {
-                            const discount = basePrice > 0 && tier.pricePerUnit < basePrice ? Math.round(((basePrice - tier.pricePerUnit) / basePrice) * 100) : 0;
-                            return (
-                                <Label key={tier.minQuantity} htmlFor={tier.minQuantity.toString()} className={cn("flex items-center gap-4 p-4 rounded-lg border transition-colors cursor-pointer", selectedTierKey === tier.minQuantity.toString() ? 'border-primary bg-primary/5' : 'hover:bg-muted/50')}>
-                                    <RadioGroupItem value={tier.minQuantity.toString()} id={tier.minQuantity.toString()} />
-                                    <div className="flex justify-between items-center w-full">
-                                        <div className="font-semibold">
-                                            Qty {tier.minQuantity}{tier.maxQuantity ? ` - ${tier.maxQuantity}` : '+'}
-                                            {discount > 0 && <Badge variant="destructive" className="ml-2">SAVE {discount}%</Badge>}
+                <div className="p-6 border-b">
+                    <h2 className="text-lg font-semibold text-foreground">{product.name}</h2>
+                    <p className="text-sm text-muted-foreground">Add to your cart</p>
+                    <Badge variant="secondary" className="mt-2">{t.stock}: {numberFormatter.format(product.stockQuantity)}</Badge>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div className="space-y-3">
+                        <Label className="text-base font-semibold">{t.pricingTiers}</Label>
+                        <RadioGroup value={activeTierMinQuantity.toString()} disabled className="space-y-3">
+                            {sortedTiers.map(tier => {
+                                const basePrice = sortedTiers[0].pricePerUnit;
+                                const discount = basePrice > 0 && tier.pricePerUnit < basePrice ? Math.round(((basePrice - tier.pricePerUnit) / basePrice) * 100) : 0;
+                                const isActive = activeTierMinQuantity === tier.minQuantity;
+                                return (
+                                    <Label key={tier.minQuantity} htmlFor={tier.minQuantity.toString()} className={cn("flex items-center gap-4 p-4 rounded-lg border transition-all cursor-default", isActive ? 'border-primary bg-primary/5 ring-2 ring-primary ring-offset-2 ring-offset-background' : 'bg-muted/50')}>
+                                        <RadioGroupItem value={tier.minQuantity.toString()} id={tier.minQuantity.toString()} />
+                                        <div className="flex justify-between items-center w-full">
+                                            <div className="font-semibold">
+                                                {t.qty} {numberFormatter.format(tier.minQuantity)}{tier.maxQuantity ? ` - ${numberFormatter.format(tier.maxQuantity)}` : '+'}
+                                                {discount > 0 && <Badge variant="destructive" className="ml-2">{t.save} {numberFormatter.format(discount)}%</Badge>}
+                                            </div>
+                                            <div className={cn("font-bold", isActive ? "text-primary" : "text-foreground")}>{currencyFormatter.format(tier.pricePerUnit)}</div>
                                         </div>
-                                        <div className="font-bold text-primary">{formatter.format(tier.pricePerUnit)}</div>
-                                    </div>
-                                </Label>
-                            );
-                        })}
-                        <Label htmlFor="custom" className={cn("flex items-center gap-4 p-4 rounded-lg border transition-colors cursor-pointer", selectedTierKey === 'custom' ? 'border-primary bg-primary/5' : 'hover:bg-muted/50')}>
-                            <RadioGroupItem value="custom" id="custom" />
-                            <span className="font-semibold">Custom Quantity</span>
-                        </Label>
-                    </RadioGroup>
-                    {selectedTierKey === 'custom' && (<div className="pl-10 pt-2 space-y-2"><div className="flex items-center gap-2"><Button variant="outline" size="icon" onClick={() => adjustCustomQuantity(-1)}><Minus className="h-4 w-4" /></Button><Input type="text" value={customQuantity} onChange={(e) => handleCustomQuantityChange(e.target.value)} className="text-center font-bold text-lg" /><Button variant="outline" size="icon" onClick={() => adjustCustomQuantity(1)}><Plus className="h-4 w-4" /></Button></div></div>)}
+                                    </Label>
+                                );
+                            })}
+                        </RadioGroup>
+                    </div>
+
+                    <div className="space-y-4">
+                        <Label htmlFor="order-quantity" className="text-base font-semibold">{t.orderQuantity}</Label>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="icon" onClick={() => handleQuantityChange(orderQuantity - 1)}><Minus className="h-4 w-4" /></Button>
+                            <Input 
+                                id="order-quantity"
+                                type="text"
+                                value={orderQuantity} 
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleQuantityChange(parseInt(e.target.value, 10))} 
+                                className="text-center font-bold text-lg h-10" 
+                            />
+                            <Button variant="outline" size="icon" onClick={() => handleQuantityChange(orderQuantity + 1)}><Plus className="h-4 w-4" /></Button>
+                        </div>
+                        <Slider
+                            value={[orderQuantity]}
+                            onValueChange={(value: number[]) => handleQuantityChange(value[0])}
+                            min={product.minimumOrderQuantity}
+                            max={product.stockQuantity}
+                            step={1}
+                        />
+                    </div>
+
                     {errorMessage && <p className="text-sm text-destructive text-center pt-2">{errorMessage}</p>}
                 </div>
                 <div className="p-6 border-t space-y-4">
-                    <div className="w-full flex justify-between items-center bg-muted p-4 rounded-lg"><span className="text-muted-foreground">Total Price</span><span className="text-2xl font-bold">{formatter.format(totalPrice)}</span></div>
-                    <Button type="button" size="lg" className="w-full h-12" onClick={handleConfirm} disabled={!!errorMessage}><ShoppingCart className="mr-2 h-5 w-5" />Add to Cart</Button>
-                    <Button type="button" variant="outline" size="lg" className="w-full h-12 bg-accent" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <div className="w-full flex justify-between items-center bg-muted p-4 rounded-lg">
+                        <span className="text-muted-foreground">{t.totalPrice}</span>
+                        <span className="text-2xl font-bold">{currencyFormatter.format(totalPrice)}</span>
+                    </div>
+                    <Button type="button" size="lg" className="w-full h-12" onClick={handleConfirm} disabled={!!errorMessage}>
+                        {isOwner ? (
+                            <>
+                                <Ban className="mr-2 h-5 w-5" />
+                                {t.yourProduct}
+                            </>
+                        ) : (
+                            <>
+                                <ShoppingCart className="mr-2 h-5 w-5" />
+                                {t.addToCart}
+                            </>
+                        )}
+                    </Button>
+                    <Button type="button" variant="outline" size="lg" className="w-full h-12 bg-accent" onClick={() => onOpenChange(false)}>{t.cancel}</Button>
                 </div>
             </div>
         </div>
