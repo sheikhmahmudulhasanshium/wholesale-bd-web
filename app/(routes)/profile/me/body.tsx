@@ -1,7 +1,7 @@
 // app/(routes)/profile/me/components/body.tsx
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/app/components/contexts/auth-context";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Camera, Edit, Mail, Phone, ShieldCheck, Tag, MoreHorizontal, Eye, Images as ImagesIcon, PlusCircle, Sparkles } from "lucide-react";
-import { PublicUserProfile, Product, GroupedMedia, DiscoveryResponse } from "@/lib/types";
+import { PublicUserProfile, Product, GroupedMedia } from "@/lib/types";
 import apiClient from "@/lib/apiClient";
 import Link from "next/link";
 import { useLanguage } from "@/app/components/contexts/language-context";

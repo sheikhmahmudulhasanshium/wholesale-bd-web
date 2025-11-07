@@ -9,6 +9,7 @@ import { ZoneProvider } from "./components/contexts/zone-context";
 import { AuthProvider } from "./components/contexts/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { CartProvider } from "./components/contexts/cart-context";
 
 // Correctly define Poppins as the main 'sans' font
 const poppins = Poppins({
@@ -54,7 +55,9 @@ export default function RootLayout({
             <AuthProvider>
               <LanguageProvider>
                 <ZoneProvider>
-                  {children}
+                    <CartProvider>
+                      {children}
+                    </CartProvider>
                   <Toaster richColors position="top-right" />
                 </ZoneProvider>
               </LanguageProvider>

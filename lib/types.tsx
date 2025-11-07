@@ -98,14 +98,19 @@ export interface GroupedMedia {
   audio: Media[];
   links: Media[];
 }
+export interface Review {
+  _id: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
 
-// --- Product Type ---
 export interface Product {
   _id: string;
   name: string;
   name_bn?: string;
   description: string;
-  /** @deprecated The `images` array is for backward compatibility only. Use `thumbnail` and `previews`. */
   images?: string[];
   thumbnail: ProductMedia | null;
   previews: ProductMedia[];
@@ -116,10 +121,10 @@ export interface Product {
   stockQuantity: number;
   minimumOrderQuantity: number;
   unit: string;
-  status: "active" | "inactive" | "archived";
+  status: 'active' | 'inactive' | 'archived';
   isActive: boolean;
   viewCount: number;
-  orderCount: number;
+  orderCount?: number;
   createdAt: string;
   updatedAt: string;
   brand: string;
@@ -131,10 +136,153 @@ export interface Product {
   rating: number;
   reviewCount: number;
   __v: number;
-  tags: string[]; // --- V NEW ---
+  tags: string[];
+  reviews: Review[];
 }
 
-// --- Collection Types ---
+// --- Cart Related Types ---
+export interface CartProduct {
+  _id: string;
+  name: string;
+  unit: string;
+  minimumOrderQuantity: number;
+  thumbnail: ProductMedia | null;
+}
+export interface CartItem {
+  product: CartProduct;
+  quantity: number;
+  pricing: {
+    unitPrice: number;
+    itemTotal: number;
+  };
+  warnings: string[];
+}
+export interface CartSeller {
+  _id: string;
+  businessName: string;
+}
+export interface SellerItemGroup {
+  seller: CartSeller;
+  items: CartItem[];
+}
+export interface Cart {
+  _id: string;
+  status: string;
+  itemsBySeller: SellerItemGroup[];
+  summary: {
+    totalUniqueItems: number;
+    totalQuantity: number;
+    grandTotal: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CartSearchResult {
+  seller: {
+    _id: string;
+    businessName: string;
+  };
+  product: {
+    _id: string;
+    name: string;
+  };
+  quantity: number;
+  pricing: {
+    unitPrice: number;
+    itemTotal: number;
+  };
+  warnings: string[];
+}
+
+export interface AdminCartView {
+  _id: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  summary: {
+    totalUniqueItems: number;
+    totalQuantity: number;
+    grandTotal: number;
+  };
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    email: string;
+    phone: string | null;
+  };
+  itemsBySeller: SellerItemGroup[]; 
+}
+
+export interface PaginatedAdminCartResponse {
+  data: AdminCartView[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ProductDetails {
+  thumbnailUrl: string | null;
+  minimumOrderQuantity: number;
+  pricingTiers: { minQuantity: number; pricePerUnit: number }[];
+}
+
+
+// --- Order Related Types ---
+export interface OrderItem {
+  productId: string;
+  productName: string;
+  productSku?: string;
+  thumbnailUrl?: string;
+  quantity: number;
+  pricePerUnitAtOrder: number;
+  totalPrice: number;
+  productImage?: string | null;
+}
+export interface ShippingAddress {
+  fullName: string;
+  addressLine?: string;
+  city: string;
+  zone: string;
+  phone?: string;
+  address?: string;
+  postalCode?: string;
+}
+export interface Order {
+  _id: string;
+  orderNumber: string;
+  userId: string;
+  items: OrderItem[];
+  totalAmount: number;
+  shippingAddress: ShippingAddress;
+  status:
+    | 'pending_approval'
+    | 'processing'
+    | 'ready_for_dispatch'
+    | 'shipped'
+    | 'delivered'
+    | 'cancelled'
+    | 'rejected'
+    | 'pending';
+  paymentStatus: 'pending' | 'paid' | 'refunded' | 'failed';
+  adminNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+  customerId?: string;
+  sellerId?: string;
+  subtotal?: number;
+  shippingCost?: number;
+  tax?: number;
+  paymentMethod?: string;
+  notes?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+}
+
+// --- Other types ---
 export interface CollectionProduct {
   product: Product;
   priority: number;
@@ -156,18 +304,16 @@ export interface Collection {
   updatedAt: string;
   __v: number;
 }
-
-// --- API Query & Response Types ---
 export interface ProductQuery {
   search?: string;
   categoryId?: string;
   zoneId?: string;
   sellerId?: string;
-  status?: "active" | "inactive" | "out_of_stock";
+  status?: 'active' | 'inactive' | 'out_of_stock';
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: "createdAt" | "price" | "name" | "viewCount";
-  sortOrder?: "asc" | "desc";
+  sortBy?: 'createdAt' | 'price' | 'name' | 'viewCount';
+  sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
 }
@@ -179,13 +325,10 @@ export interface PaginatedProductsResponse {
   totalPages: number;
 }
 
-// --- OpenGraph Type Extension ---
 type BaseOpenGraph = NonNullable<Metadata['openGraph']>;
 export type ExtendedOpenGraph = Omit<BaseOpenGraph, 'type'> & {
   type: 'product';
 };
-
-// --- V NEW: Search and Discovery Types ---
 export interface SearchResponse {
   data: Product[];
   total: number;
@@ -195,28 +338,21 @@ export interface SearchResponse {
   hasPrevPage: boolean;
   suggestion?: string;
 }
-
 export interface DiscoverySection {
   title: string;
   items: Product[];
 }
-
 export interface DiscoveryResponse {
   recentlyViewed?: Product[];
   recommendedForYou?: DiscoverySection;
   trendingNow?: DiscoverySection;
 }
-// @/lib/types.ts
-// ... (all existing types remain the same)
-
-// --- V NEW: Add UserActivity type at the end of the file ---
 export interface UserActivity {
   _id: string;
   userId: string;
-  viewedProducts: string[]; // Array of product IDs
-  likedCategories: string[]; // Array of category IDs
+  viewedProducts: string[];
+  likedCategories: string[];
   recentSearches: string[];
   createdAt: string;
   updatedAt: string;
 }
-// --- ^ END of NEW ---

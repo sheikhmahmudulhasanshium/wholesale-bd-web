@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, User as UserIcon, ShieldCheck, Mail, LayoutDashboardIcon } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboardIcon } from "lucide-react";
 import { useAuth } from "@/app/components/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

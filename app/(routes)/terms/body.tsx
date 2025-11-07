@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { BasicPageProvider } from '@/app/components/providers/basic-page-provider';
 import { Header } from '@/app/components/common/header';
 import Footer from '@/app/components/common/footer';

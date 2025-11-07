@@ -1,7 +1,7 @@
 // app/dashboard/body.tsx
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronDown, DollarSign, LayoutDashboard, MenuIcon, Package, PlusCircle, ShoppingCart, Users, Settings, History, BarChart2 } from 'lucide-react';
+import { DollarSign, LayoutDashboard, MenuIcon, Package, PlusCircle, ShoppingCart, Users, Settings, History, BarChart2 } from 'lucide-react';
 import { useDashboardStats } from '@/app/components/hooks/use-dashboard-stats';
 import { Badge } from '@/components/ui/badge';
 

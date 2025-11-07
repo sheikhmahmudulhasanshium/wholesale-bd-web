@@ -14,7 +14,7 @@ interface ProductCardProps {
   isEditable?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, language, isEditable = false }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, isEditable = false }) => {
   const router = useRouter(); // <-- Initialize the router
 
   const displayName = product.name; 

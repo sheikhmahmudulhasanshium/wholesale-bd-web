@@ -11,7 +11,6 @@ import { Header } from "@/app/components/common/header";
 import Footer from "@/app/components/common/footer";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
-import { Metadata } from 'next';
 
 // Note: generateMetadata can't be used in a "use client" file.
 // We should export metadata from a server component wrapper if needed.

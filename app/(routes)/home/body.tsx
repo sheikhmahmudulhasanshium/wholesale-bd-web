@@ -14,7 +14,7 @@ import { useLanguage } from "@/app/components/contexts/language-context";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 
 import ContentMenu from "./conent-body";
-import ZoneBody from "./zone-body";
+//import ZoneBody from "./zone-body";
 import { useCollections } from "@/app/components/hooks/use-collections";
 import { ProductGrid } from "./product-grid";
 import Link from "next/link";
