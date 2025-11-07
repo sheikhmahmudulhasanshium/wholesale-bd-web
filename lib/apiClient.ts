@@ -26,6 +26,8 @@ import {
   Order,
   CartSearchResult,
   PaginatedAdminCartResponse,
+  CollectionProduct,
+  PricingTier,
 } from './types';
 
 interface ApiErrorResponse {
@@ -34,9 +36,29 @@ interface ApiErrorResponse {
   statusCode?: number;
 }
 
-type RawProductData = Omit<Product, 'thumbnail' | 'previews'> & {
+// RawProductData represents the old API shape from the /collections endpoint
+type RawProductData = Omit<Product, 'thumbnail' | 'previews' | 'regularUnitPrice'> & {
   media?: ProductMedia[];
+  regularUnitPrice?: number; // It might or might not be here
 };
+
+// A more specific type for the nested product within a Collection from the old API
+interface RawCollectionProduct extends Omit<CollectionProduct, 'product'> {
+  product: RawProductData;
+}
+
+// A more specific type for the Collection object from the old API
+interface RawCollection extends Omit<Collection, 'products'> {
+  products: RawCollectionProduct[];
+}
+
+// A more specific type for the data shape in the Discovery Feed from the old API
+type RawDiscoveryResponse = {
+  recentlyViewed?: RawProductData[];
+  recommendedForYou?: { title: string; items: RawProductData[] };
+  trendingNow?: { title: string; items: RawProductData[] };
+};
+
 
 class ApiClient {
   public instance: AxiosInstance;
@@ -111,27 +133,40 @@ class ApiClient {
     }
   }
 
-  private _transformProductShape = (productData: RawProductData): Product => {
-    if (
-      productData &&
-      'thumbnail' in productData &&
-      'previews' in productData
-    ) {
+  private _transformProductShape = (productData: RawProductData | Product): Product => {
+    // If the data is already in the new, correct shape, just return it.
+    if ('thumbnail' in productData && 'previews' in productData && 'regularUnitPrice' in productData) {
       return productData as Product;
     }
-
-    const media: ProductMedia[] = productData.media || [];
+    
+    // Create a mutable copy to handle potential modifications
+    const productCopy: Partial<Product> & { media?: ProductMedia[] } = { ...productData };
+    
+    const media: ProductMedia[] = productCopy.media || [];
     const sortedMedia = [...media].sort(
       (a, b) => (a.priority || 0) - (b.priority || 0),
     );
 
-    const thumbnail =
-      sortedMedia.find((m) => m.purpose === 'thumbnail') || null;
-    const previews = sortedMedia.filter((m) => m.purpose === 'preview');
+    // Add the new properties
+    productCopy.thumbnail = sortedMedia.find((m) => m.purpose === 'thumbnail') || null;
+    productCopy.previews = sortedMedia.filter((m) => m.purpose === 'preview');
 
-    const { media: _, ...rest } = productData;
+    // Remove the old property
+    delete productCopy.media;
+    
+    // CRITICAL FIX: If `regularUnitPrice` is missing (from old /collections API),
+    // calculate it from the pricing tiers as a fallback.
+    if (!productCopy.regularUnitPrice && productCopy.pricingTiers && productCopy.pricingTiers.length > 0) {
+        const validTierPrices = productCopy.pricingTiers
+          .map((tier: PricingTier) => tier.pricePerUnit)
+          .filter((price: number) => typeof price === 'number');
+        if (validTierPrices.length > 0) {
+            // The "regular" price is usually the first tier or the highest price. Let's use highest as a fallback.
+            productCopy.regularUnitPrice = Math.max(...validTierPrices);
+        }
+    }
 
-    return { ...rest, thumbnail, previews } as Product;
+    return productCopy as Product;
   };
 
   auth = {
@@ -158,53 +193,36 @@ class ApiClient {
       params: { q: string; page?: number; limit?: number },
       signal?: AbortSignal,
     ): Promise<{ data: SearchResponse }> => {
-      type RawSearchResponse = Omit<SearchResponse, 'data'> & {
-        data: RawProductData[];
-      };
-      const response = await this.instance.get<RawSearchResponse>('/search', {
+      const response = await this.instance.get<{ data: RawProductData[] } & Omit<SearchResponse, 'data'>>('/search', {
         params,
         signal,
       });
-      response.data.data = response.data.data.map(this._transformProductShape);
-      return response as unknown as { data: SearchResponse };
+      const transformedData = response.data.data.map(this._transformProductShape);
+      return { ...response, data: { ...response.data, data: transformedData } };
     },
     getDiscoveryFeed: async (
       signal?: AbortSignal,
     ): Promise<{ data: DiscoveryResponse }> => {
-      type RawDiscoveryResponse = {
-        recentlyViewed?: RawProductData[];
-        recommendedForYou?: { title: string; items: RawProductData[] };
-        trendingNow?: { title: string; items: RawProductData[] };
-      };
-      const response = await this.instance.get<RawDiscoveryResponse>(
-        '/me/discover',
-        { signal },
-      );
-
+      const response = await this.instance.get<RawDiscoveryResponse>('/me/discover', { signal });
+      const data = response.data;
       const transformedData: DiscoveryResponse = {};
-      if (response.data.recentlyViewed) {
-        transformedData.recentlyViewed = response.data.recentlyViewed.map(
-          this._transformProductShape,
-        );
-      }
-      if (response.data.recommendedForYou) {
-        transformedData.recommendedForYou = {
-          title: response.data.recommendedForYou.title,
-          items: response.data.recommendedForYou.items.map(
-            this._transformProductShape,
-          ),
-        };
-      }
-      if (response.data.trendingNow) {
-        transformedData.trendingNow = {
-          title: response.data.trendingNow.title,
-          items: response.data.trendingNow.items.map(
-            this._transformProductShape,
-          ),
-        };
-      }
 
-      return { data: transformedData };
+      if (data.recentlyViewed) {
+        transformedData.recentlyViewed = data.recentlyViewed.map(this._transformProductShape);
+      }
+      if (data.recommendedForYou) {
+        transformedData.recommendedForYou = {
+          ...data.recommendedForYou,
+          items: data.recommendedForYou.items.map(this._transformProductShape),
+        };
+      }
+      if (data.trendingNow) {
+        transformedData.trendingNow = {
+          ...data.trendingNow,
+          items: data.trendingNow.items.map(this._transformProductShape),
+        };
+      }
+      return { ...response, data: transformedData };
     },
   };
 
@@ -230,110 +248,53 @@ class ApiClient {
     addTags: (productId: string, tags: string[]): Promise<{ data: Product }> =>
       this.instance.post(`/products/${productId}/tags`, { tags }),
     getAllPublic: async (signal?: AbortSignal): Promise<{ data: Product[] }> => {
-      const response = await this.instance.get<RawProductData[]>(
-        '/products/public/all',
-        { signal },
-      );
-      response.data = response.data.map(this._transformProductShape);
-      return response as unknown as { data: Product[] };
+      const response = await this.instance.get<RawProductData[]>('/products/public/all', { signal });
+      const transformedData = response.data.map(this._transformProductShape);
+      return { ...response, data: transformedData };
     },
-    getByIdPublic: async (
-      id: string,
-      signal?: AbortSignal,
-    ): Promise<{ data: Product }> => {
-      const response = await this.instance.get<RawProductData>(
-        `/products/public/find/${id}`,
-        { signal },
-      );
-      response.data = this._transformProductShape(response.data);
-      return response as unknown as { data: Product };
+    getByIdPublic: async (id: string, signal?: AbortSignal): Promise<{ data: Product }> => {
+      const response = await this.instance.get<RawProductData>(`/products/public/find/${id}`, { signal });
+      const transformedData = this._transformProductShape(response.data);
+      return { ...response, data: transformedData };
     },
-    getByCategoryIdPublic: async (
-      categoryId: string,
-      signal?: AbortSignal,
-    ): Promise<{ data: Product[] }> => {
-      const response = await this.instance.get<RawProductData[]>(
-        `/products/public/category/${categoryId}`,
-        { signal },
-      );
-      response.data = response.data.map(this._transformProductShape);
-      return response as unknown as { data: Product[] };
+    getByCategoryIdPublic: async (categoryId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => {
+      const response = await this.instance.get<RawProductData[]>(`/products/public/category/${categoryId}`,{ signal });
+      const transformedData = response.data.map(this._transformProductShape);
+      return { ...response, data: transformedData };
     },
-    getByZoneIdPublic: async (
-      zoneId: string,
-      signal?: AbortSignal,
-    ): Promise<{ data: Product[] }> => {
-      const response = await this.instance.get<RawProductData[]>(
-        `/products/public/zone/${zoneId}`,
-        { signal },
-      );
-      response.data = response.data.map(this._transformProductShape);
-      return response as unknown as { data: Product[] };
+    getByZoneIdPublic: async (zoneId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => {
+      const response = await this.instance.get<RawProductData[]>(`/products/public/zone/${zoneId}`, { signal });
+      const transformedData = response.data.map(this._transformProductShape);
+      return { ...response, data: transformedData };
     },
-    getBySellerIdPublic: async (
-      sellerId: string,
-      signal?: AbortSignal,
-    ): Promise<{ data: Product[] }> => {
-      const response = await this.instance.get<RawProductData[]>(
-        `/products/public/seller/${sellerId}`,
-        { signal },
-      );
-      response.data = response.data.map(this._transformProductShape);
-      return response as unknown as { data: Product[] };
+    getBySellerIdPublic: async (sellerId: string, signal?: AbortSignal): Promise<{ data: Product[] }> => {
+      const response = await this.instance.get<RawProductData[]>(`/products/public/seller/${sellerId}`, { signal });
+      const transformedData = response.data.map(this._transformProductShape);
+      return { ...response, data: transformedData };
     },
-    getPublicCount: (
-      signal?: AbortSignal,
-    ): Promise<{ data: { totalProducts: number } }> =>
+    getPublicCount: (signal?: AbortSignal): Promise<{ data: { totalProducts: number } }> =>
       this.instance.get('/products/public/count', { signal }),
-    uploadThumbnail: (
-      productId: string,
-      file: File,
-    ): Promise<{ data: Product }> => {
+    uploadThumbnail: (productId: string, file: File): Promise<{ data: Product }> => {
       const formData = new FormData();
       formData.append('file', file);
-      return this.instance.post(
-        `/products/${productId}/thumbnail/upload`,
-        formData,
-      );
+      return this.instance.post(`/products/${productId}/thumbnail/upload`, formData);
     },
-    setThumbnailFromUrl: (
-      productId: string,
-      url: string,
-    ): Promise<{ data: Product }> =>
+    setThumbnailFromUrl: (productId: string, url: string): Promise<{ data: Product }> =>
       this.instance.post(`/products/${productId}/thumbnail/from-url`, { url }),
-    uploadPreview: (
-      productId: string,
-      file: File,
-    ): Promise<{ data: Product }> => {
+    uploadPreview: (productId: string, file: File): Promise<{ data: Product }> => {
       const formData = new FormData();
       formData.append('file', file);
-      return this.instance.post(
-        `/products/${productId}/previews/upload`,
-        formData,
-      );
+      return this.instance.post(`/products/${productId}/previews/upload`, formData);
     },
-    addPreviewFromUrl: (
-      productId: string,
-      url: string,
-    ): Promise<{ data: Product }> =>
+    addPreviewFromUrl: (productId: string, url: string): Promise<{ data: Product }> =>
       this.instance.post(`/products/${productId}/previews/from-url`, { url }),
-    updateMediaProperties: (
-      productId: string,
-      mediaId: string,
-      data: { purpose?: 'thumbnail' | 'preview'; priority?: number },
-    ): Promise<{ data: Product }> =>
+    updateMediaProperties: (productId: string, mediaId: string, data: { purpose?: 'thumbnail' | 'preview'; priority?: number }): Promise<{ data: Product }> =>
       this.instance.patch(`/products/${productId}/media/${mediaId}`, data),
-    deleteMedia: (
-      productId: string,
-      mediaId: string,
-    ): Promise<{ data: Product }> =>
+    deleteMedia: (productId: string, mediaId: string): Promise<{ data: Product }> =>
       this.instance.delete(`/products/${productId}/media/${mediaId}`),
     incrementView: (productId: string): Promise<void> =>
       this.instance.patch(`/products/public/${productId}/view`),
-    addReview: (
-      productId: string,
-      data: { rating: number; comment?: string },
-    ): Promise<{ data: Product }> =>
+    addReview: (productId: string, data: { rating: number; comment?: string }): Promise<{ data: Product }> =>
       this.instance.post(`/products/${productId}/reviews`, data),
   };
 
@@ -343,8 +304,6 @@ class ApiClient {
       this.instance.post('/cart/items', { items }),
     updateItems: (items: { productId: string; quantity: number }[]): Promise<{ data: Cart }> =>
       this.instance.patch('/cart', { items }),
-    
-    // --- VVVVVV SIMPLIFIED AND CORRECTED METHOD SIGNATURE VVVVVV ---
     search: (params: {
         q?: string;
         sortBy?: 'productName' | 'price' | 'sellerName' | 'warnings' | 'updatedAt' | 'totalValue' | 'status' | 'createdAt';
@@ -354,7 +313,6 @@ class ApiClient {
       }
     ): Promise<{ data: PaginatedAdminCartResponse | CartSearchResult[] }> =>
       this.instance.get('/cart/search', { params }),
-    // --- ^^^^^^ END OF CORRECTION ^^^^^^ ---
   };
 
   orders = {
@@ -370,40 +328,31 @@ class ApiClient {
 
   collections = {
     findAllPublic: async (): Promise<{ data: Collection[] }> => {
-      const response = await this.instance.get<Collection[]>('/collections');
-      response.data = response.data.map((collection) => ({
+      const response = await this.instance.get<RawCollection[]>('/collections');
+      const transformedData = response.data.map((collection) => ({
         ...collection,
         products: collection.products.map((cp) => ({
           ...cp,
-          product: this._transformProductShape(cp.product as RawProductData),
+          product: this._transformProductShape(cp.product),
         })),
       }));
-      return response;
+      return { ...response, data: transformedData };
     },
   };
 
   uploads = {
-    getMediaForEntity: (
-      entityModel: 'Product' | 'User',
-      entityId: string,
-      signal?: AbortSignal,
-    ): Promise<{ data: GroupedMedia }> =>
+    getMediaForEntity: (entityModel: 'Product' | 'User', entityId: string, signal?: AbortSignal): Promise<{ data: GroupedMedia }> =>
       this.instance.get(`/uploads/by/${entityModel}/${entityId}`, { signal }),
   };
 
   users = {
     getMyActivity: (signal?: AbortSignal): Promise<{ data: UserActivity }> =>
       this.instance.get('/me/activity', { signal }),
-    getPublicProfileById: (
-      userId: string,
-      signal?: AbortSignal,
-    ): Promise<{ data: PublicUserProfile }> =>
+    getPublicProfileById: (userId: string, signal?: AbortSignal): Promise<{ data: PublicUserProfile }> =>
       this.instance.get(`/users/${userId}`, { signal }),
     getMyUploads: (signal?: AbortSignal): Promise<{ data: GroupedMedia }> =>
       this.instance.get('/users/me/uploads', { signal }),
-    getTotalCount: (
-      signal?: AbortSignal,
-    ): Promise<{ data: { totalUsers: number } }> =>
+    getTotalCount: (signal?: AbortSignal): Promise<{ data: { totalUsers: number } }> =>
       this.instance.get('/users/count', { signal }),
     uploadProfilePicture: (file: File): Promise<{ data: Media }> => {
       const formData = new FormData();

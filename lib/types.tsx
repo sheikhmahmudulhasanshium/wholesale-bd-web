@@ -117,6 +117,7 @@ export interface Product {
   sellerId: string;
   categoryId: string;
   zoneId: string;
+  regularUnitPrice: number;
   pricingTiers: PricingTier[];
   stockQuantity: number;
   minimumOrderQuantity: number;
@@ -213,7 +214,7 @@ export interface AdminCartView {
     email: string;
     phone: string | null;
   };
-  itemsBySeller: SellerItemGroup[]; 
+  itemsBySeller: SellerItemGroup[];
 }
 
 export interface PaginatedAdminCartResponse {
@@ -227,9 +228,9 @@ export interface PaginatedAdminCartResponse {
 export interface ProductDetails {
   thumbnailUrl: string | null;
   minimumOrderQuantity: number;
+  regularUnitPrice: number;
   pricingTiers: { minQuantity: number; pricePerUnit: number }[];
 }
-
 
 // --- Order Related Types ---
 export interface OrderItem {

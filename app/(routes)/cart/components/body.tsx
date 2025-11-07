@@ -28,13 +28,11 @@ import { ConfirmationDialog } from './confirmation-dialog';
 import { AdminCartCard } from './admin-cart-card';
 
 // Lib & Types
-// FIX: Imported the full 'Product' type
 import { CartSearchResult, PaginatedAdminCartResponse, ProductDetails, Product } from '@/lib/types';
 import apiClient from '@/lib/apiClient';
 import Navbar from './navbar';
 import Sidebar from './sidebar';
 
-// FIX: This type now correctly reflects the API response, which contains the full 'Product' object.
 type ProductApiResponse = {
   data: Product;
 } | null;
@@ -98,15 +96,16 @@ const CartView = () => {
           const productResults = await Promise.all(productPromises);
           const newDetails: Record<string, ProductDetails> = {};
           
-          // FIX: The 'result' parameter now correctly matches the 'ProductApiResponse' type.
           productResults.forEach((result: ProductApiResponse) => {
             if (result && result.data) {
-              // FIX: Construct the 'ProductDetails' object from the full 'Product' data.
+              // --- V FIX: Added the missing 'regularUnitPrice' property ---
               newDetails[result.data._id] = {
                 thumbnailUrl: result.data.thumbnail?.url || null,
                 minimumOrderQuantity: result.data.minimumOrderQuantity || 1,
                 pricingTiers: result.data.pricingTiers || [],
+                regularUnitPrice: result.data.regularUnitPrice,
               };
+              // --- ^ END of FIX ---
             }
           });
           setProductDetails(prev => ({ ...prev, ...newDetails }));

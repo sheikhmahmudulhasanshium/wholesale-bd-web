@@ -18,10 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Category, Zone } from "@/lib/types";
 import { useAuth } from "../contexts/auth-context";
 
-// --- FIX 1: Add maxQuantity to the pricing tier schema ---
 const formPricingTierSchema = z.object({
   minQuantity: z.string().min(1, "Min quantity is required"),
-  maxQuantity: z.string().optional(), // maxQuantity is optional
+  maxQuantity: z.string().optional(),
   pricePerUnit: z.string().min(1, "Price is required"),
 });
 
@@ -30,6 +29,7 @@ const productFormSchema = z.object({
   description: z.string().trim().min(10, "Description must be at least 10 characters"),
   categoryId: z.string().min(1, "Please select a category"),
   zoneId: z.string().min(1, "Please select a zone"),
+  regularUnitPrice: z.string().min(1, "Regular price is required"),
   minimumOrderQuantity: z.string().min(1, "Minimum order is required"),
   stockQuantity: z.string().min(1, "Stock is required"),
   unit: z.string().trim().min(1, "Unit is required (e.g., piece, kg, liter)"),
@@ -70,10 +70,10 @@ export function CreateProductForm() {
     defaultValues: {
       name: "",
       description: "",
+      regularUnitPrice: "",
       minimumOrderQuantity: "1",
       stockQuantity: "0",
       unit: "",
-      // --- FIX 2: Include maxQuantity in default values ---
       pricingTiers: [{ minQuantity: "1", maxQuantity: "", pricePerUnit: "" }],
       brand: "",
       model: "",
@@ -98,9 +98,9 @@ export function CreateProductForm() {
     const payload = {
         ...data,
         sellerId: user._id,
+        regularUnitPrice: Number(data.regularUnitPrice),
         minimumOrderQuantity: Number(data.minimumOrderQuantity),
         stockQuantity: Number(data.stockQuantity),
-        // --- FIX 3: Correctly map maxQuantity to the payload ---
         pricingTiers: data.pricingTiers.map(tier => ({
             minQuantity: Number(tier.minQuantity),
             maxQuantity: tier.maxQuantity ? Number(tier.maxQuantity) : undefined,
@@ -153,7 +153,8 @@ export function CreateProductForm() {
 
         <div className="p-6 border rounded-lg bg-card">
             <h3 className="text-lg font-medium mb-4">Pricing & Inventory</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <FormField control={form.control} name="regularUnitPrice" render={({ field }) => (<FormItem><FormLabel>Regular Unit Price</FormLabel><FormControl><Input type="number" placeholder="e.g., 500" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="stockQuantity" render={({ field }) => (<FormItem><FormLabel>Stock Quantity</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="minimumOrderQuantity" render={({ field }) => (<FormItem><FormLabel>Minimum Order</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="unit" render={({ field }) => (<FormItem><FormLabel>Unit</FormLabel><FormControl><Input placeholder="e.g., Piece, Box, Kg" {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -162,7 +163,6 @@ export function CreateProductForm() {
             <FormLabel>Pricing Tiers (for bulk discounts)</FormLabel>
             <div className="space-y-4 mt-2">
                 {fields.map((field, index) => (
-                    // --- FIX 4: Add maxQuantity input to the UI ---
                     <div key={field.id} className="grid grid-cols-3 items-start gap-2 p-2 border rounded-md relative pr-12">
                         <FormField control={form.control} name={`pricingTiers.${index}.minQuantity`} render={({ field }) => (<FormItem><FormControl><Input type="number" placeholder="Min Qty" {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name={`pricingTiers.${index}.maxQuantity`} render={({ field }) => (<FormItem><FormControl><Input type="number" placeholder="Max Qty (optional)" {...field} /></FormControl><FormMessage /></FormItem>)} />
