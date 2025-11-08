@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, User as UserIcon, LayoutDashboardIcon } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboardIcon, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/app/components/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,15 @@ export function UserNav() {
             <Link href="/dashboard">
                 <LayoutDashboardIcon className="mr-2 h-4 w-4" />
                 <span>Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator/>
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/cart">
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                <span>Cart</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
