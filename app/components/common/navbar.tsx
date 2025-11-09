@@ -2,117 +2,146 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from "@/app/components/contexts/language-context";
-import { mainNavLinks } from "@/lib/menu";
-import { ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  ChevronDown, LucideProps, Tag, Shapes, Sparkles, MenuIcon,
+  // Import icons for dynamic rendering
+  Smartphone, ShoppingBag, Coffee, Home, Heart, Gamepad2, Book, Car, PawPrint,
+} from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button"; // <-- 1. IMPORT buttonVariants
+import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 import { ZoneSelector } from "./buttons/zone-selector";
+import { useCategories } from "../hooks/use-categories";
+import { slugify } from "@/lib/utils";
 
-export function NavMenu() {
+// --- Dynamic Icon Helper ---
+const iconComponents: { [key: string]: React.ElementType<LucideProps> } = {
+  smartphone: Smartphone, "shopping-bag": ShoppingBag, coffee: Coffee,
+  home: Home, heart: Heart, gamepad: Gamepad2, book: Book, car: Car, paw: PawPrint,
+};
+interface DynamicIconProps extends LucideProps { name?: string; }
+const DynamicIcon: React.FC<DynamicIconProps> = ({ name, ...props }) => {
+  const IconComponent = name ? iconComponents[name] : null;
+  if (!IconComponent) return <Tag {...props} />;
+  return <IconComponent {...props} />;
+};
+
+// --- Component for the Category Dropdown using DropdownMenu ---
+const CategoryDropdown = () => {
   const { language } = useLanguage();
   const pathname = usePathname();
+  const { categories, isLoading } = useCategories();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
-  const categoryRef = useRef<HTMLDivElement>(null);
-
-  const navLinks = mainNavLinks.filter((link) => link.type === "link");
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        categoryRef.current &&
-        !categoryRef.current.contains(event.target as Node)
-      ) {
-        setIsCategoryMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [categoryRef]);
+  const isActive = pathname.startsWith('/products');
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-40 h-12">
-      <div className="container mx-auto px-4 h-full">
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant={isOpen || isActive ? "secondary" : "outline"}
+          size="sm"
+          className="h-8"
+          disabled={isLoading}
+        >
+          <Shapes className="h-4 w-4 mr-2" />
+          <span>{language === 'bn' ? 'ক্যাটাগরি' : 'Categories'}</span>
+          <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </Button>
+      </DropdownMenuTrigger>
+      {/* --- 2. RE-INTRODUCED FIXED WIDTH FOR GRID LAYOUT --- */}
+      <DropdownMenuContent align="start" className="w-96">
+        <div className="p-2 grid grid-cols-2 gap-x-2 gap-y-1">
+          {isLoading ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-md px-3 py-2">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 w-28" />
+              </div>
+            ))
+          ) : (
+            // --- 3. REPLACED Button asChild WITH STYLED Link ---
+            categories?.map((cat) => (
+              <Link
+                key={cat._id}
+                href={`/products#${slugify("category", cat.name)}`}
+                onClick={() => setIsOpen(false)}
+                className={buttonVariants({ variant: "ghost", className: "w-full justify-start gap-3" })}
+              >
+                <DynamicIcon name={cat.icon} className="h-4 w-4" />
+                <span>{language === "bn" ? cat.name_bn : cat.name}</span>
+              </Link>
+            ))
+          )}
+          <DropdownMenuSeparator className="col-span-2 my-1" />
+          <Link
+            href="/products"
+            onClick={() => setIsOpen(false)}
+            className={buttonVariants({ variant: "ghost", className: "col-span-2 w-full justify-start gap-3" })}
+          >
+            <Shapes className="h-4 w-4" />
+            <span>{language === 'bn' ? 'সব ক্যাটাগরি' : 'All Categories'}</span>
+          </Link>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+// --- Main NavMenu Component ---
+export function NavMenu() {
+  const [isNavSheetOpen, setIsNavSheetOpen] = useState(false);
+  const { language } = useLanguage();
+
+  return (
+    <nav className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-40 h-14 flex items-center w-full justify-between">
+      <div className="container mx-auto ">
         <div className="flex items-center justify-between h-full gap-4">
-          <div className="hidden md:flex flex-1 items-center gap-2">
-            {navLinks.map((link) => {
-              // --- RENDER THE CATEGORY DROPDOWN BUTTON ---
-              if (link.subMenu) {
-                return (
-                  <div
-                    key={link.name.en}
-                    className="relative"
-                    ref={categoryRef}
-                  >
-                    <Button
-                      onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
-                      variant={isCategoryMenuOpen ? "secondary" : "outline"}
-                      size="sm"
-                      className="h-8"
-                    >
-                      <link.icon className="h-4 w-4 mr-2" />
-                      <span>{link.name[language]}</span>
-                      <ChevronDown
-                        className={`h-4 w-4 ml-2 transition-transform ${
-                          isCategoryMenuOpen ? "rotate-180" : ""
-                        }`}
-                      />
-                    </Button>
-
-                    {isCategoryMenuOpen && (
-                      // 1. WIDENED THE DROPDOWN CONTAINER FOR TWO COLUMNS
-                      <div className="absolute top-full left-0 mt-2 w-96 rounded-md shadow-lg bg-background border z-50 animate-in fade-in-0 zoom-in-95">
-                        {/* 2. APPLIED CSS GRID FOR THE TWO-COLUMN LAYOUT */}
-                        <div className="p-2 grid grid-cols-2 gap-x-2 gap-y-1">
-                          {link.subMenu.map((subItem) => (
-                            <Link
-                              key={subItem.href}
-                              href={subItem.href}
-                              onClick={() => setIsCategoryMenuOpen(false)}
-                              // 3. ADDED CONDITIONAL STYLING FOR THE "SEE ALL" LINK
-                              className={`
-                                flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors
-                                ${
-                                  subItem.href === '/categories'
-                                    ? 'col-span-2 mt-1 border-t'
-                                    : ''
-                                }
-                              `}
-                            >
-                              <subItem.icon className="h-4 w-4" />
-                              <span>{subItem.name[language]}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              // --- RENDER ALL OTHER STANDARD LINKS ---
-              const isActive = link.href
-                ? pathname.startsWith(link.href)
-                : false;
-              return (
-                <Button
-                  key={link.href}
-                  asChild
-                  variant={isActive ? "secondary" : "outline"}
-                  size="sm"
-                  className="h-8"
-                >
-                  <Link href={link.href!}>
-                    <link.icon className="h-4 w-4 mr-2" />
-                    <span>{link.name[language]}</span>
-                  </Link>
+          
+          <div className="flex-shrink-0">
+            <Sheet open={isNavSheetOpen} onOpenChange={setIsNavSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MenuIcon className="h-6 w-6" />
+                  <span className="sr-only">Open Navigation</span>
                 </Button>
-              );
-            })}
+              </SheetTrigger>
+              <SheetContent side="left" className="w-full max-w-xs p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>
+                    <Link href="/" onClick={() => setIsNavSheetOpen(false)}>
+                      <Image src="/logo/logo.svg" alt="Logo" width={150} height={35} />
+                    </Link>
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="p-2 space-y-1">
+                  <Button asChild variant="ghost" className="w-full justify-start"><Link href="/" onClick={() => setIsNavSheetOpen(false)}>Home</Link></Button>
+                  <Button asChild variant="ghost" className="w-full justify-start"><Link href="/products" onClick={() => setIsNavSheetOpen(false)}>Products</Link></Button>
+                  <Button asChild variant="ghost" className="w-full justify-start"><Link href="/orders" onClick={() => setIsNavSheetOpen(false)}>Orders</Link></Button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
 
-          <div className="flex-shrink-0 ml-auto">
+          <div className="hidden md:flex items-center gap-2">
+            <CategoryDropdown />
+            
+            <Button asChild variant="outline" size="sm" className="h-8">
+              <Link href="/products#collection">
+                <Sparkles className="h-4 w-4 mr-2" />
+                <span>{language === 'bn' ? 'কালেকশন' : 'Collections'}</span>
+              </Link>
+            </Button>
+            
             <ZoneSelector />
           </div>
         </div>

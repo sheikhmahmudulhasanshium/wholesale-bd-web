@@ -32,9 +32,9 @@ const PricingTiersList = ({ tiers, unit, regularPrice }: { tiers: Product['prici
         return (
           <div key={index} className="grid grid-cols-12 items-center gap-4 p-3 bg-muted/50 rounded-lg">
             <div className="col-span-2 flex justify-start">
-              {discountPercent > 0 ? <Badge variant="destructive" className='text-xl'>-{discountPercent}%</Badge>:<Badge variant={'default'}>Regular</Badge>}
+              {discountPercent > 0 ? <Badge variant="destructive" className='text-base'>-{discountPercent}%</Badge>:<Badge variant={'default'}>Regular</Badge>}
             </div>
-            <div className="col-span-5 text-center font-semibold text-card-foreground">
+            <div className="col-span-5 text-center sm:text-wrap font-semibold text-card-foreground">
               {tier.minQuantity}{tier.maxQuantity ? ` - ${tier.maxQuantity}` : '+'}
               <span className="ml-1 font-normal text-muted-foreground">{unit}(s)</span>
             </div>

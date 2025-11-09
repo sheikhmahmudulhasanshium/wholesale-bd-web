@@ -1,24 +1,24 @@
-// @/app/home/body.tsx
-
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { Header } from "@/app/components/common/header";
 import Footer from "@/app/components/common/footer";
-import Sidebar from "@/app/components/common/sidebar";
 import { NavMenu } from "@/app/components/common/navbar";
-import { ArrowUp, FullscreenIcon } from "lucide-react";
+import { ArrowUp, FullscreenIcon, StarsIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useLanguage } from "@/app/components/contexts/language-context";
 import { BasicPageProvider } from "@/app/components/providers/basic-page-provider";
 
 import ContentMenu from "./conent-body";
-//import ZoneBody from "./zone-body";
 import { useCollections } from "@/app/components/hooks/use-collections";
 import { ProductGrid } from "./product-grid";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Sidebar from "@/app/components/common/sidebar";
+import { CartButton } from "@/app/components/common/buttons/cart-button";
+import { ZoneSelector } from "@/app/components/common/buttons/zone-selector";
+import BecomeSeller from "@/app/components/common/buttons/become-a-seller-button";
 
 export default function HomeClient() {
   const { language } = useLanguage();
@@ -26,10 +26,14 @@ export default function HomeClient() {
   const { collections, isLoading, error } = useCollections();
   const [isMounted, setIsMounted] = useState(false);
 
+  // --- 1. ADD STATE to control the sidebar from this page ---
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // ... (rest of your useEffects and functions remain the same)
   useEffect(() => {
     const onScroll = () => {
       const bannerEle = document.getElementById("banner");
@@ -53,31 +57,43 @@ export default function HomeClient() {
     </>
   );
 
+
   return (
     <BasicPageProvider
       header={<Header />}
       footer={<Footer />}
       navbar={<NavMenu />}
-      sidebar={isMounted ? <Sidebar /> : null}
+      // --- 2. PASS the state and setter function as props to the Sidebar ---
+      sidebar={isMounted ? (
+        <div className="flex w-full justify-between items-center">
+            <Sidebar
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          />
+          <div className="flex justify-end items-center-safe gap-2">
+            {/*<Button>
+              <StarsIcon/> Collections
+            </Button>*/}
+            <ZoneSelector/>
+            <CartButton/>
+            <BecomeSeller/>
+          </div>
+        </div>
+        
+      ) : null}
     >
       <main className="flex flex-col items-center justify-start py-6 bg-accent text-foreground relative">
+        {/* ... The rest of your main content remains the same ... */}
         <ContentMenu language={language} id="banner" title="" isBanner={true} />
-
         {isLoading && renderSkeletons()}
-
         {error && (
             <div className="text-center py-20 text-destructive">
                 <p>Failed to load collections.</p>
                 <p className="text-sm text-muted-foreground">{error.message}</p>
             </div>
         )}
-
         {collections?.map((collection) => {
-          // --- START OF MODIFICATION ---
-          // Check if this specific collection is the "Limited Time Offer"
           const isLimitedTimeOffer = collection.url === 'limited-time-offer';
-          // --- END OF MODIFICATION ---
-
           return (
             <ContentMenu
               key={collection._id}
@@ -85,55 +101,23 @@ export default function HomeClient() {
               id={collection.url}
               title={language === 'bn' ? collection.title_bn : collection.title}
               iconName={collection.lucide_react_icon}
-              // --- START OF MODIFICATION ---
-              // Only pass the endDate if it's the limited time offer collection
               endDate={isLimitedTimeOffer ? collection.end_date : undefined}
-              // --- END OF MODIFICATION ---
               productCount={collection.products.length}
               content={<ProductGrid products={collection.products} language={language}/>}
             />
           );
         })}
-
-
-<Link href="/products" className="w-10/12">
-  <Button
-    variant={'default'}
-    className="
-      group           {/* This is key! It allows us to style children on parent hover */}
-      w-full
-      h-14
-      text-lg
-      font-semibold
-      rounded-xl
-      flex
-      items-center
-      justify-center
-      gap-3
-      overflow-hidden {/* Prevents any content from spilling on scale */}
-      transition-all
-      duration-300
-      ease-in-out
-      focus:ring-2    {/* Add a focus ring for accessibility */}
-      focus:ring-ring {/* Uses your theme's ring color */}
-      focus:ring-offset-2 {/* Adds space between button and ring */}
-      hover:scale-105   {/* Slightly enlarge the whole button on hover */}
-      hover:shadow-xl   {/* Make the shadow more pronounced */}
-    "
-  >
-    {/* The icon will rotate on button hover because of `group-hover` */}
-    <FullscreenIcon className="
-      h-5 w-5
-      transition-transform
-      duration-300
-      group-hover:rotate-90
-      group-hover:scale-110
-    " />
-    <span>
-      {language === 'bn' ? 'সকল পণ্য' : 'All Products'}
-    </span>
-  </Button>
-</Link>
+        <Link href="/products" className="w-10/12">
+          <Button
+            variant={'default'}
+            className="group w-full h-14 text-lg font-semibold rounded-xl flex items-center justify-center gap-3 overflow-hidden transition-all duration-300 ease-in-out focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:scale-105 hover:shadow-xl"
+          >
+            <FullscreenIcon className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90 group-hover:scale-110" />
+            <span>
+              {language === 'bn' ? 'সকল পণ্য' : 'All Products'}
+            </span>
+          </Button>
+        </Link>
         {showTopButton && (
           <button
             type="button"

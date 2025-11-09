@@ -1,4 +1,4 @@
-import Body from "./body";
+import Body from "./components/body";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -195,7 +195,7 @@ const About = () => {
 
           <motion.div variants={itemVariants}>
             <Button asChild className="px-10 py-4 text-lg sm:text-xl font-semibold" variant="default">
-              <Link href="/catalog">{t.cta.primaryActionText}</Link>
+              <Link href="/products">{t.cta.primaryActionText}</Link>
             </Button>
           </motion.div>
 

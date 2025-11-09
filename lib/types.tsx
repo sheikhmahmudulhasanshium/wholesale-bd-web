@@ -60,7 +60,12 @@ export interface Seller {
 export interface Category {
   _id: string;
   name: string;
+  name_bn: string;
   description?: string;
+  description_bn?: string;
+  icon?: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 export interface Zone {
   _id: string;

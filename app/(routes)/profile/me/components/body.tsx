@@ -23,6 +23,8 @@ import { UploadImageModal } from "@/app/components/modals/upload-image-modal";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useDiscoveryFeed } from "@/app/components/hooks/use-discovery-feed"; // --- V NEW ---
 import { ProductCard } from "@/app/components/common/product-card";
+import Navbar from "./navbar";
+import Sidebar from "./sidebar";
 
 
 // --- V NEW: Discovery Feed Component (can be moved to its own file later) ---
@@ -147,7 +149,7 @@ export default function Body() {
 
   if (isAuthLoading || !isAuthenticated || !user) {
     return (
-      <BasicPageProvider header={<Header />} footer={<Footer />}>
+      <BasicPageProvider header={<Header />} footer={<Footer />} navbar={<Navbar/>} sidebar={<Sidebar/>}>
         <div className="container mx-auto py-8"><Skeleton className="h-[50vh] w-full" /></div>
       </BasicPageProvider>
     );
@@ -159,7 +161,7 @@ export default function Body() {
   const backgroundStyle = publicProfile?.backgroundPicture ? { backgroundImage: `url(${publicProfile.backgroundPicture})` } : {};
 
   return (
-    <BasicPageProvider header={<Header />} footer={<Footer />}>
+    <BasicPageProvider header={<Header />} footer={<Footer />} navbar={<Navbar/>} sidebar={<Sidebar/>}>
        <UploadImageModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

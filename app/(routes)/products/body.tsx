@@ -1,5 +1,3 @@
-// app/(routes)/products/body.tsx
-
 'use client';
 
 import { useState, useEffect, ElementType, useRef } from "react";
@@ -7,8 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import * as Icons from "lucide-react";
-import { ArrowUp, Package, PackageSearch, Tag, Globe, LayoutGrid, MapPin, Shapes, Sparkles, HelpCircle, LucideIcon, ChevronDown, Menu, ListIcon, Radar, BoxesIcon } from "lucide-react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ArrowUp, Package, PackageSearch, Tag, Globe, LayoutGrid, MapPin, Shapes, Sparkles, HelpCircle, LucideIcon, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -21,17 +18,15 @@ import { Category, Product, Zone, Collection, CollectionProduct } from "@/lib/ty
 import { useProductsByCriteria } from "@/app/components/hooks/get-products-by-criteria";
 import { useLanguage } from "@/app/components/contexts/language-context";
 import CountdownTimer from "@/app/(routes)/home/count-down-timer";
-import { ProductCard } from "@/app/components/common/product-card"; // <-- 1. IMPORT THE CORRECT COMPONENT
+import { ProductCard } from "@/app/components/common/product-card";
+import Sidebar from "@/app/components/common/sidebar";
 
 type ProductView = 'all' | 'category' | 'zone' | 'collection';
 
 const slugify = (prefix: string, text: string) => `${prefix}-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`;
 
-// --- 2. REMOVE THE OUTDATED LOCAL ProductCard COMPONENT ---
-// const ProductCard = ({ product }: { product: Product }) => ( ... ); // This entire block is removed.
-
 const ProductGrid = ({ products }: { products: CollectionProduct[] }) => {
-  const { language } = useLanguage(); // Get language context for the card
+  const { language } = useLanguage();
   if (!products || products.length === 0) return <p className='text-muted-foreground'>No products found in this collection.</p>;
   return <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{products.map(({ product }) => <ProductCard key={product._id} product={product} language={language} />)}</div>;
 };
@@ -67,7 +62,7 @@ const ContentMenu = ({ id, title, language, iconName, content, productCount, end
 
 const ProductSection = ({ id, title, description, Icon, criteria }: { id: string; title: string; description?: string; Icon: ElementType; criteria: { type: 'category' | 'zone'; id: string; }; }) => {
   const { data: products, isLoading } = useProductsByCriteria(criteria);
-  const { language } = useLanguage(); // Get language context for the card
+  const { language } = useLanguage();
   return (
     <section id={id} className="w-full max-w-7xl mb-12">
       <div className="mb-6"><h2 className="flex items-center gap-3 text-2xl md:text-3xl font-bold tracking-tight text-foreground"><Icon className="h-6 w-6 md:h-7 md:w-7 text-primary" />{title}</h2>{description && <p className="mt-2 text-muted-foreground">{description}</p>}</div>
@@ -123,10 +118,10 @@ const Body = () => {
       <div className="w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="w-full max-w-2xl mx-auto flex justify-start sm:justify-center items-center p-1 my-2 space-x-2">
           {[
-            { key: 'all', label: 'All', icon: LayoutGrid },
-            { key: 'category', label: 'Categories', icon: Shapes },
-            { key: 'zone', label: 'Zones', icon: MapPin },
-            { key: 'collection', label: 'Collections', icon: Sparkles }
+            { key: 'all', label: 'All', label_bn: 'সব', icon: LayoutGrid },
+            { key: 'category', label: 'Categories', label_bn: 'ক্যাটাগরি', icon: Shapes },
+            { key: 'zone', label: 'Zones', label_bn: 'জোন', icon: MapPin },
+            { key: 'collection', label: 'Collections', label_bn: 'কালেকশন', icon: Sparkles }
           ].map(item => (
             <Button
               key={item.key}
@@ -140,65 +135,40 @@ const Body = () => {
               )}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              {language === 'bn' ? item.label_bn : item.label}
             </Button>
           ))}
         </div>
       </div>
     </div>
   );
-  
-  const productsSidebar = (
-    <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon"><Menu className="h-6 w-6" /><span className="sr-only">Open Page Navigation</span></Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-full max-w-xs sm:max-w-sm p-0 flex flex-col">
-        <SheetHeader className="p-4 border-b">
-            <SheetTitle><Image src={'/logo/logo.svg'} alt="Menu" height={100} width={200}/></SheetTitle>
-        </SheetHeader>
-        <SheetDescription className="pl-4">Select Menu</SheetDescription>
-        <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-4">
-          <div>
-            <div className="px-3 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center-safe gap-2"><ListIcon className="h-6 w-6"/> <h3 className="text-base">Categories</h3></div>
-            {isLoading ? <Skeleton className="h-32 w-full" /> : categories?.map((cat) => (
-              <Link key={cat._id} href={`#${slugify('category', cat.name)}`} onClick={() => { setView('category'); setIsSidebarOpen(false); }} className="block">
-                <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Tag className="h-5 w-5 text-muted-foreground"/>{cat.name}</Button>
-              </Link>
-            ))}
-          </div>
-          <div>
-            <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t flex items-center-safe gap-2"><Radar className="h-6 w-6"/><h3 className="text-base">Zones</h3></div>
-            {isLoading ? <Skeleton className="h-24 w-full" /> : zones?.map((zone) => (
-              <Link key={zone._id} href={`#${slugify('zone', zone.name)}`} onClick={() => { setView('zone'); setIsSidebarOpen(false); }} className="block">
-                <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Globe className="h-5 w-5 text-muted-foreground"/>{zone.name}</Button>
-              </Link>
-            ))}
-          </div>
-          <div>
-            <div className="px-3 pt-2 pb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider border-t flex items-center gap-2"><BoxesIcon className="h-6 w-6"/><h3 className="text-base">Collections</h3></div>
-            {isLoading ? <Skeleton className="h-24 w-full" /> : collections?.map((collection) => (
-              <Link key={collection._id} href={`#${slugify('collection', collection.url)}`} onClick={() => { setView('collection'); setIsSidebarOpen(false); }} className="block">
-                <Button variant="ghost" className="w-full justify-start text-base gap-3 h-12"><Sparkles className="h-5 w-5 text-muted-foreground"/>{language === 'bn' ? collection.title_bn : collection.title}</Button>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
 
   return ( 
-    <BasicPageProvider header={<Header/>} footer={<Footer/>} navbar={productsNavbar} sidebar={isMounted ? productsSidebar : null}>
+    <BasicPageProvider 
+      header={<Header/>} 
+      footer={<Footer/>} 
+      navbar={productsNavbar} 
+      sidebar={<Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />}
+    >
       <main className="flex flex-col items-center justify-start py-6 sm:py-8 px-4 bg-background text-foreground relative">
-        <div className="w-full max-w-7xl mb-8 text-center"><h1 className="flex items-center justify-center gap-4 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter"><Package className="h-8 sm:h-10 w-8 sm:w-10" />Our Products</h1><p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-sm sm:text-base">Explore a wide range of quality products, perfectly organized for your convenience.</p></div>
+        <div className="w-full max-w-7xl mb-8 text-center">
+          <h1 className="flex items-center justify-center gap-4 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tighter">
+            <Package className="h-8 sm:h-10 w-8 sm:w-10" />
+            {language === 'bn' ? 'আমাদের পণ্যসমূহ' : 'Our Products'}
+          </h1>
+          <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-sm sm:text-base">
+            {language === 'bn' 
+              ? 'আপনার সুবিধার্থে সাজানো মানসম্মত পণ্যের বিশাল সম্ভার।' 
+              : 'Explore a wide range of quality products, perfectly organized for your convenience.'}
+          </p>
+        </div>
         <div className="w-full">
           {isLoading && (<div className="w-full max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{Array.from({ length: 10 }).map((_, i) => (<div key={i} className="rounded-lg border bg-card shadow-sm"><Skeleton className="h-40 sm:h-48 w-full rounded-t-lg rounded-b-none" /><div className="p-3 sm:p-4 space-y-2 border-t"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></div></div>))}</div>)}
           
-          {/* --- 3. PASS language PROP TO ProductCard --- */}
           {!isLoading && view === 'all' && (<div className="w-full max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{allProducts?.map(product => <ProductCard key={product._id} product={product} language={language} />)}</div>)}
           
-          {!isLoading && view === 'category' && categories?.map(category => (<ProductSection key={category._id} id={slugify('category', category.name)} title={category.name} description={category.description} Icon={Tag} criteria={{ type: 'category', id: category._id }} />))}
+          {!isLoading && view === 'category' && categories?.map(category => (<ProductSection key={category._id} id={slugify('category', category.name)} title={language === 'bn' ? category.name_bn : category.name} description={language === 'bn' ? category.description_bn : category.description} Icon={Tag} criteria={{ type: 'category', id: category._id }} />))}
+          
           {!isLoading && view === 'zone' && zones?.map(zone => (<ProductSection key={zone._id} id={slugify('zone', zone.name)} title={zone.name} description={zone.description} Icon={Globe} criteria={{ type: 'zone', id: zone._id }} />))}
           {!isLoading && view === 'collection' && collections?.map(collection => (<ContentMenu key={collection._id} id={collection.url} language={language} title={language === 'bn' ? collection.title_bn : collection.title} iconName={collection.lucide_react_icon} productCount={collection.products.length} content={<ProductGrid products={collection.products} />} endDate={collection.url === 'limited-time-offer' ? collection.end_date : undefined}/>))}
         </div>
