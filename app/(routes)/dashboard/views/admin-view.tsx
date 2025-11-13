@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
@@ -19,9 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription
-} from '@/components/ui/dialog';
+// NOTE: AlertDialog import has been removed.
 import {
   Package, Users, ShoppingCart, Loader2, RefreshCw, CheckCircle2, XCircle, MoreVertical, Trash2, ShieldAlert
 } from 'lucide-react';
@@ -31,8 +28,6 @@ import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient';
 import { AxiosError } from 'axios';
 import { AuthenticatedUser } from '@/lib/types';
-
-// NOTE: All imports for AlertDialog have been removed.
 
 const ROLES: Array<'customer' | 'seller' | 'admin'> = ['customer', 'seller', 'admin'];
 
@@ -54,6 +49,44 @@ const StatCard = ({ title, value, icon: Icon, description }: { title: string, va
   </Card>
 );
 
+const AdminDashboardSkeleton = () => (
+  <div className="space-y-8">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <Skeleton className="h-[108px] w-full" />
+      <Skeleton className="h-[108px] w-full" />
+      <Skeleton className="h-[108px] w-full" />
+    </div>
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-72 mt-2" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-10 w-10" />
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          <Skeleton className="h-10 w-[160px]" />
+          <Skeleton className="h-10 w-[180px]" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="min-w-[700px] border rounded-lg">
+          <div className="flex items-center p-3 font-medium text-muted-foreground bg-muted border-b">
+            <div className="flex-1">User</div><div className="w-28 text-center">Role</div><div className="w-40 text-center">Status</div><div className="w-16 text-right">Actions</div>
+          </div>
+          <div>
+            {[...Array(5)].map((_, i) => ( <div key={i} className="flex items-center p-3 border-b last:border-b-0"> <div className="flex-1 flex items-center gap-3"><Skeleton className="h-10 w-10 rounded-full" /><div className="space-y-1.5"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-32" /></div></div> <div className="w-28 flex justify-center"><Skeleton className="h-6 w-20 rounded-full" /></div> <div className="w-40 flex justify-center gap-4"><Skeleton className="h-5 w-5 rounded-full" /><Skeleton className="h-6 w-16 rounded-full" /></div> <div className="w-16 flex justify-end"><Skeleton className="h-8 w-8" /></div> </div> ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
 export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDashboardViewProps) {
   const { user: loggedInUser } = useAuth();
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
@@ -62,39 +95,51 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isMounted, setIsMounted] = useState(false);
   
-  // State for role change dialog (still needed)
-  const [selectedUser, setSelectedUser] = useState<AuthenticatedUser | null>(null);
-  const [newRole, setNewRole] = useState<'customer' | 'seller' | 'admin'>('customer');
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const fetchUsers = useCallback(async () => {
     if (!loggedInUser) return;
     setIsUsersLoading(true);
     try {
-      const response = await apiClient.users.adminListAll();
-      const userList = response.data;
-      const adminInList = userList.find(u => u._id === loggedInUser._id);
-      if (!adminInList) { 
-        // We need to allow reassignment here, so we'll disable the lint rule for this block.
-        // eslint-disable-next-line prefer-const
-        let mutableUserList = [...userList];
-        mutableUserList.unshift(loggedInUser); 
-        setAllUsers(mutableUserList);
+      let response;
+      if (statusFilter === 'pending-seller') {
+        response = await apiClient.users.adminListPendingSellers();
       } else {
-        setAllUsers(userList);
+        response = await apiClient.users.adminListAll();
       }
+      const initialUserList = response.data;
+      const adminInList = initialUserList.find(u => u._id === loggedInUser._id);
+      
+      const finalUserList = (
+        !adminInList && statusFilter !== 'pending-seller' 
+          ? [loggedInUser, ...initialUserList] 
+          : initialUserList
+      );
+      setAllUsers(finalUserList);
+
     } catch (error) {
       toast.error('Failed to fetch user list.');
     } finally {
       setIsUsersLoading(false);
     }
-  }, [loggedInUser]);
+  }, [loggedInUser, statusFilter]);
 
   useEffect(() => {
     if (loggedInUser) { fetchUsers(); }
   }, [fetchUsers, loggedInUser]);
 
   const filteredUsers = useMemo(() => {
+    if (statusFilter === 'pending-seller') {
+        return allUsers.filter(user => 
+            searchTerm.length < 2 || 
+            `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
     return allUsers.filter(user => {
       const searchMatch = searchTerm.length < 2 || `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
       const roleMatch = roleFilter === 'all' || user.role === roleFilter;
@@ -114,21 +159,22 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
       toast.success('User successfully verified.');
       await fetchUsers();
     } catch (error) {
-      let errorMessage = 'Verification failed.';
-      if (error instanceof AxiosError && error.response?.data?.message) { errorMessage = error.response.data.message as string; }
+      const errorMessage = 'Verification failed.';
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const a: string = error.response.data.message as string;
+      }
       toast.error(errorMessage);
     } finally {
       setActionInProgress(null);
     }
   };
 
-  const handleUpdateRole = async () => {
-    if (!selectedUser) return;
-    setActionInProgress(selectedUser._id);
+  const handleUpdateRole = async (user: AuthenticatedUser, newRole: 'customer' | 'seller' | 'admin') => {
+    setActionInProgress(user._id);
     try {
-      await apiClient.users.adminUpdateRole(selectedUser._id, { role: newRole });
-      toast.success(`Role for ${selectedUser.firstName} updated to ${newRole}.`);
-      setSelectedUser(null);
+      await apiClient.users.adminUpdateRole(user._id, { role: newRole });
+      toast.success(`Role for ${user.firstName} updated to ${newRole}.`);
       await fetchUsers();
     } catch (error) {
       let errorMessage = 'Role update failed.';
@@ -137,11 +183,6 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
     } finally {
       setActionInProgress(null);
     }
-  };
-  
-  const openRoleChangeDialog = (user: AuthenticatedUser) => {
-    setSelectedUser(user);
-    setNewRole(user.role);
   };
 
   const handleDeleteUser = async (user: AuthenticatedUser) => {
@@ -159,17 +200,8 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
     }
   }
 
-  if (isStatsLoading) {
-    return (
-      <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Skeleton className="h-[108px] w-full" />
-          <Skeleton className="h-[108px] w-full" />
-          <Skeleton className="h-[108px] w-full" />
-        </div>
-        <Skeleton className="h-96 w-full" />
-      </div>
-    );
+  if (!isMounted || isStatsLoading) {
+    return <AdminDashboardSkeleton />;
   }
 
   return (
@@ -183,18 +215,12 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5"/> All Users</CardTitle>
-              <CardDescription>View, filter, and manage all users on the platform.</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Input placeholder="Search name or email..." className="w-full sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-              <Button variant="outline" size="icon" onClick={fetchUsers} disabled={isUsersLoading}><RefreshCw className={`h-4 w-4 ${isUsersLoading ? 'animate-spin' : ''}`} /></Button>
-            </div>
+            <div><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5"/> All Users</CardTitle><CardDescription>View, filter, and manage all users on the platform.</CardDescription></div>
+            <div className="flex items-center gap-2"><Input placeholder="Search name or email..." className="w-full sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /><Button variant="outline" size="icon" onClick={fetchUsers} disabled={isUsersLoading}><RefreshCw className={`h-4 w-4 ${isUsersLoading ? 'animate-spin' : ''}`} /></Button></div>
           </div>
           <div className="flex flex-wrap items-center gap-2 mt-4">
-              <Select value={roleFilter} onValueChange={setRoleFilter}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by role..." /></SelectTrigger><SelectContent><SelectItem value="all">All Roles</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="seller">Seller</SelectItem><SelectItem value="customer">Customer</SelectItem></SelectContent></Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="blocked">Blocked</SelectItem><SelectItem value="verified">Verified</SelectItem><SelectItem value="unverified">Unverified</SelectItem></SelectContent></Select>
+              <Select value={roleFilter} onValueChange={setRoleFilter} disabled={statusFilter === 'pending-seller'}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by role..." /></SelectTrigger><SelectContent><SelectItem value="all">All Roles</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="seller">Seller</SelectItem><SelectItem value="customer">Customer</SelectItem></SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[180px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger><SelectContent><SelectItem value="all">All General Statuses</SelectItem><SelectItem value="pending-seller">Pending Sellers</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="blocked">Blocked</SelectItem><SelectItem value="verified">Verified</SelectItem><SelectItem value="unverified">Unverified</SelectItem></SelectContent></Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -216,7 +242,10 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
                             <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               {!user.emailVerified && (<DropdownMenuItem onClick={() => handleManualVerify(user._id)}>Verify Email</DropdownMenuItem>)}
-                              <DropdownMenuItem onClick={() => openRoleChangeDialog(user)}>Change Role</DropdownMenuItem>
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>Change Role</DropdownMenuSubTrigger>
+                                <DropdownMenuPortal><DropdownMenuSubContent>{ROLES.map((role) => (<DropdownMenuItem key={role} disabled={user.role === role} onClick={() => handleUpdateRole(user, role)}>Set as {role.charAt(0).toUpperCase() + role.slice(1)}</DropdownMenuItem>))}</DropdownMenuSubContent></DropdownMenuPortal>
+                              </DropdownMenuSub>
                               {loggedInUser?._id !== user._id && (<>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuSub>
@@ -244,21 +273,6 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
           </ScrollArea>
         </CardContent>
       </Card>
-
-      {/* --- This Dialog is for the "Change Role" action --- */}
-      <Dialog open={!!selectedUser} onOpenChange={(isOpen: boolean) => !isOpen && setSelectedUser(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Change Role for {selectedUser?.firstName} {selectedUser?.lastName}</DialogTitle><DialogDescription>Select the new role for this user. This action is immediate.</DialogDescription></DialogHeader>
-          <div className="py-4">
-            <Label htmlFor="role-select">New Role</Label>
-            <Select onValueChange={(value) => setNewRole(value as 'customer' | 'seller' | 'admin')} value={newRole}>
-              <SelectTrigger id="role-select"><SelectValue placeholder="Select a role" /></SelectTrigger>
-              <SelectContent><SelectItem value="customer">Customer</SelectItem><SelectItem value="seller">Seller</SelectItem><SelectItem value="admin">Admin</SelectItem></SelectContent>
-            </Select>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setSelectedUser(null)}>Cancel</Button><Button onClick={handleUpdateRole} disabled={actionInProgress === selectedUser?._id}>{actionInProgress === selectedUser?._id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Confirm Change</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
