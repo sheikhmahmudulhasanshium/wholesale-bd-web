@@ -105,19 +105,12 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
     if (!loggedInUser) return;
     setIsUsersLoading(true);
     try {
-      let response;
-      if (statusFilter === 'pending-seller') {
-        response = await apiClient.users.adminListPendingSellers();
-      } else {
-        response = await apiClient.users.adminListAll();
-      }
+      const response = await apiClient.users.adminListAll();
       const initialUserList = response.data;
       const adminInList = initialUserList.find(u => u._id === loggedInUser._id);
       
       const finalUserList = (
-        !adminInList && statusFilter !== 'pending-seller' 
-          ? [loggedInUser, ...initialUserList] 
-          : initialUserList
+        !adminInList ? [loggedInUser, ...initialUserList] : initialUserList
       );
       setAllUsers(finalUserList);
 
@@ -126,24 +119,18 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
     } finally {
       setIsUsersLoading(false);
     }
-  }, [loggedInUser, statusFilter]);
+  }, [loggedInUser]);
 
   useEffect(() => {
     if (loggedInUser) { fetchUsers(); }
   }, [fetchUsers, loggedInUser]);
 
   const filteredUsers = useMemo(() => {
-    if (statusFilter === 'pending-seller') {
-        return allUsers.filter(user => 
-            searchTerm.length < 2 || 
-            `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }
     return allUsers.filter(user => {
       const searchMatch = searchTerm.length < 2 || `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
       const roleMatch = roleFilter === 'all' || user.role === roleFilter;
       const statusMatch = statusFilter === 'all' ||
+        (statusFilter === 'pending-seller' && user.role === 'seller' && user.sellerStatus === 'pending') ||
         (statusFilter === 'verified' && user.emailVerified) ||
         (statusFilter === 'unverified' && !user.emailVerified) ||
         (statusFilter === 'active' && user.isActive) ||
@@ -159,11 +146,8 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
       toast.success('User successfully verified.');
       await fetchUsers();
     } catch (error) {
-      const errorMessage = 'Verification failed.';
-      if (error instanceof AxiosError && error.response?.data?.message) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const a: string = error.response.data.message as string;
-      }
+      let errorMessage = 'Verification failed.';
+      if (error instanceof AxiosError && error.response?.data?.message) { errorMessage = error.response.data.message as string; }
       toast.error(errorMessage);
     } finally {
       setActionInProgress(null);
@@ -208,7 +192,7 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
     <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard title="Total Products" value={stats?.totalProducts ?? 0} icon={Package} description="Across all sellers" />
-        <StatCard title="Total Users" value={allUsers.length} icon={Users} description="Customers & Sellers" />
+        <StatCard title="Total Users" value={stats?.totalUsers ?? 0} icon={Users} description="Customers & Sellers" />
         <StatCard title="Pending Orders" value={stats?.pendingOrdersCount ?? 0} icon={ShoppingCart} description="Awaiting fulfillment" />
       </div>
 
@@ -273,6 +257,8 @@ export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDa
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* --- The AlertDialog has been completely removed --- */}
     </div>
   );
 }
