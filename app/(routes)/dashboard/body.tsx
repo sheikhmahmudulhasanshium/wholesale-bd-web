@@ -12,14 +12,15 @@ import Footer from '@/app/components/common/footer';
 import { Header } from '@/app/components/common/header';
 import { ZoneSelector } from '@/app/components/common/buttons/zone-selector';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DollarSign, LayoutDashboard, MenuIcon, Package, PlusCircle, ShoppingCart, Users, Settings, History, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, MenuIcon, Package, PlusCircle, ShoppingCart, Settings } from 'lucide-react';
 import { useDashboardStats } from '@/app/components/hooks/use-dashboard-stats';
-import { Badge } from '@/components/ui/badge';
+import { AdminDashboardView } from './views/admin-view';
+import { SellerDashboardView } from './views/seller-view';
+import { CustomerDashboardView } from './views/customer-view';
 
-// --- DASHBOARD NAVIGATION (Simplified for this view) ---
+// --- DASHBOARD NAVIGATION (Remains the same) ---
 const dashboardNavLinks = [
   { name: { en: 'Dashboard', bn: 'ড্যাশবোর্ড' }, href: '/dashboard', icon: LayoutDashboard },
   { name: { en: 'Products', bn: 'পণ্য' }, href: '/products', icon: Package },
@@ -28,7 +29,6 @@ const dashboardNavLinks = [
 ];
 
 function DashboardNavMenu() {
-    // ... (This component can remain as it is, no changes needed)
     const { language } = useLanguage();
     const pathname = usePathname();
     return (
@@ -55,7 +55,6 @@ function DashboardNavMenu() {
 }
 
 function DashboardSidebar() {
-    // ... (This component can also remain as it is)
     const { language } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     return (
@@ -88,7 +87,7 @@ function DashboardSidebar() {
 }
 
 // =================================================================================
-// MAIN CLIENT PAGE COMPONENT (Completely Refactored)
+// MAIN CLIENT PAGE COMPONENT (Refactored)
 // =================================================================================
 
 export default function DashboardClientPage() {
@@ -96,28 +95,17 @@ export default function DashboardClientPage() {
   const router = useRouter();
   const { stats, isLoading: isLoadingStats } = useDashboardStats();
   
-  // Redirect if not logged in
+  // Redirect if not logged in. This logic stays in the parent component.
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
       router.replace('/login');
     }
   }, [isAuthLoading, isAuthenticated, router]);
   
-  const StatCard = ({ title, value, icon: Icon, description }: { title: string, value: string | number, icon: React.ElementType, description?: string }) => (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
-      </CardContent>
-    </Card>
-  );
-
-  const renderContent = () => {
-    if (isAuthLoading || isLoadingStats) {
+  // This function now delegates rendering to the appropriate view component.
+  const renderDashboardView = () => {
+    // Show a general loading skeleton while authentication is in progress
+    if (isAuthLoading) {
       return (
         <div className="space-y-8">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -125,75 +113,23 @@ export default function DashboardClientPage() {
             <Skeleton className="h-[108px] w-full" />
             <Skeleton className="h-[108px] w-full" />
           </div>
-          <div className="grid gap-8 lg:grid-cols-2">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
         </div>
       );
     }
     
-    if (!user) return null; // Should be redirected, but as a fallback
+    // Fallback if user is null after loading (should be redirected)
+    if (!user) return null;
 
-    return (
-      <div className="space-y-8">
-        {/* === Top Row Stat Cards (Role-Based) === */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {user.role === 'admin' && (
-            <>
-              <StatCard title="Total Products" value={stats?.totalProducts ?? 0} icon={Package} description="Across all sellers" />
-              <StatCard title="Total Users" value={stats?.totalUsers ?? 0} icon={Users} description="Customers & Sellers" />
-              <StatCard title="Pending Orders" value={12} icon={ShoppingCart} description="Awaiting fulfillment" />
-            </>
-          )}
-          {user.role === 'seller' && (
-            <>
-              <StatCard title="My Products" value={stats?.myProductsCount ?? 0} icon={Package} description="Active listings" />
-              <StatCard title="Total Sales" value="৳12,842.50" icon={DollarSign} description="+20.1% from last month" />
-              <StatCard title="New Orders" value={52} icon={ShoppingCart} description="Pending fulfillment" />
-            </>
-          )}
-        </div>
-
-        {/* === Second Row Infographics (Role-Based) === */}
-        <div className="grid gap-8 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><History className="h-5 w-5"/> Recent Search History</CardTitle>
-              <CardDescription>Your last 10 search queries.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {stats?.userActivity?.recentSearches && stats.userActivity.recentSearches.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {stats.userActivity.recentSearches.map((term, i) => (
-                    <Link key={i} href={`/search?q=${encodeURIComponent(term)}`}>
-                      <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">{term}</Badge>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">No recent search history found.</p>
-              )}
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2"><BarChart2 className="h-5 w-5"/> Most Visited Pages</CardTitle>
-              <CardDescription>This is a placeholder for analytics data.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex justify-between"><span>/products/apple-iphone-13</span> <span>128 views</span></li>
-                <li className="flex justify-between"><span>/products/denim-jeans</span> <span>97 views</span></li>
-                <li className="flex justify-between"><span>/</span> <span>85 views</span></li>
-                <li className="flex justify-between"><span>/categories/electronics</span> <span>62 views</span></li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    // Render the correct dashboard based on user role
+    switch (user.role) {
+      case 'admin':
+        return <AdminDashboardView stats={stats} isLoading={isLoadingStats} />;
+      case 'seller':
+        return <SellerDashboardView stats={stats} isLoading={isLoadingStats} />;
+      case 'customer':
+      default:
+        return <CustomerDashboardView stats={stats} isLoading={isLoadingStats} />;
+    }
   };
 
   return (
@@ -202,10 +138,22 @@ export default function DashboardClientPage() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">
-              {user?.role === 'admin' ? "Admin Dashboard" : user?.role === 'seller' ? "Seller Dashboard" : "My Dashboard"}
+              {isAuthLoading ? (
+                <Skeleton className="h-9 w-64" />
+              ) : (
+                <>
+                  {user?.role === 'admin' ? "Admin Dashboard" : user?.role === 'seller' ? "Seller Dashboard" : "My Dashboard"}
+                </>
+              )}
             </h1>
             <p className="text-muted-foreground mt-1">
-              {user?.role === 'admin' ? "An overview of the platform's performance." : "An overview of your store's performance."}
+              {isAuthLoading ? (
+                 <Skeleton className="h-5 w-80 mt-1" />
+              ) : (
+                <>
+                  {user?.role === 'admin' ? "An overview of the platform's performance." : user?.role === 'seller' ? "An overview of your store's performance." : "Manage your account and view recent activity."}
+                </>
+              )}
             </p>
           </div>
           {user?.role === 'seller' && (
@@ -217,7 +165,7 @@ export default function DashboardClientPage() {
             </Button>
           )}
         </div>
-        {renderContent()}
+        {renderDashboardView()}
       </div>
     </BasicPageProvider>
   );

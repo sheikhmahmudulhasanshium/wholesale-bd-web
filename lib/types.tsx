@@ -362,3 +362,15 @@ export interface UserActivity {
   createdAt: string;
   updatedAt: string;
 }
+
+// --- V NEW: Dashboard Specific Types ---
+export interface DashboardStats {
+  totalProducts?: number;
+  totalUsers?: number;
+  myProductsCount?: number;
+  userActivity?: UserActivity;
+  pendingOrdersCount?: number; // For Admin
+  totalSales?: number | string; // For Seller
+  newOrdersCount?: number; // For Seller
+}
+// --- ^ END of NEW ---
