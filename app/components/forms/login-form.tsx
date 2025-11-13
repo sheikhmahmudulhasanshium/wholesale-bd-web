@@ -23,6 +23,7 @@ import { useLanguage } from "../contexts/language-context";
 import apiClient from "@/lib/apiClient";
 import { useAuth } from "../contexts/auth-context";
 import { SignInWithGoogleButton } from "../common/buttons/google-sign-in-button";
+import { AxiosError } from "axios"; // --- V NEW: Import AxiosError ---
 
 const createFormSchema = (t: typeof translations.en) =>
   z.object({
@@ -45,16 +46,29 @@ export function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    form.clearErrors("root"); // Clear previous errors
     try {
       const response = await apiClient.auth.login(values);
       toast.success("Login successful! Redirecting...");
       login(response.data.token, response.data.user);
     } catch (error) {
+      // --- V THIS IS THE MODIFIED ERROR HANDLING LOGIC ---
+      console.log(error); // Keep this for debugging
+      let errorMessage = "Invalid email or password."; // Default error
+
+      if (error instanceof AxiosError && error.response?.data?.message) {
+        const backendMessage = error.response.data.message as string;
+        // Check for the specific message from the backend
+        if (backendMessage.includes("not registered with email/password")) {
+          errorMessage = "This account was created with a social provider (like Google). Please use that method to sign in.";
+        }
+      }
+      
       form.setError("root", {
         type: "manual",
-        message: "Invalid email or password.",
+        message: errorMessage,
       });
-      console.log(error);
+      // --- ^ END OF MODIFIED ERROR HANDLING LOGIC ---
     } finally {
       setIsLoading(false);
     }
@@ -99,12 +113,21 @@ export function LoginForm() {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>{t.passwordLabel}</FormLabel>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm font-medium text-primary hover:underline underline-offset-4"
-                  >
-                    {t.forgotPassword}
-                  </Link>
+                  <div className="text-sm">
+                    <Link
+                      href="/forgot-password"
+                      className="font-medium text-primary hover:underline underline-offset-4"
+                    >
+                      {t.forgotPassword}
+                    </Link>
+                     <span className="mx-2 text-muted-foreground">|</span>
+                     <Link
+                      href="/support"
+                      className="font-medium text-primary hover:underline underline-offset-4"
+                    >
+                      Can&apos;t sign in?
+                    </Link>
+                  </div>
                 </div>
                 <FormControl>
                   <div className="relative">

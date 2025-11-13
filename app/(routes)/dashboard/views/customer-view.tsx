@@ -36,7 +36,7 @@ export function CustomerDashboardView({ stats, isLoading }: CustomerDashboardVie
           <div className="text-center text-muted-foreground italic py-8">
             <p>Order history will be shown here.</p>
             <Button variant="link" asChild className="mt-2">
-                <Link href="/dashboard/orders">View All Orders</Link>
+                <Link href="/orders">View All Orders</Link>
             </Button>
           </div>
         </CardContent>

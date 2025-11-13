@@ -1,13 +1,40 @@
-// app/dashboard/views/admin-view.tsx
+// app/(routes)/dashboard/views/admin-view.tsx
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Package, Users, ShoppingCart, History, BarChart2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal, DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription
+} from '@/components/ui/dialog';
+import {
+  Package, Users, ShoppingCart, Loader2, RefreshCw, CheckCircle2, XCircle, MoreVertical, Trash2, ShieldAlert
+} from 'lucide-react';
 import { useDashboardStats } from '@/app/components/hooks/use-dashboard-stats';
+import { useAuth } from '@/app/components/contexts/auth-context';
+import { toast } from 'sonner';
+import apiClient from '@/lib/apiClient';
+import { AxiosError } from 'axios';
+import { AuthenticatedUser } from '@/lib/types';
+
+// NOTE: All imports for AlertDialog have been removed.
+
+const ROLES: Array<'customer' | 'seller' | 'admin'> = ['customer', 'seller', 'admin'];
 
 interface AdminDashboardViewProps {
   stats: ReturnType<typeof useDashboardStats>['stats'];
@@ -27,8 +54,112 @@ const StatCard = ({ title, value, icon: Icon, description }: { title: string, va
   </Card>
 );
 
-export function AdminDashboardView({ stats, isLoading }: AdminDashboardViewProps) {
-  if (isLoading) {
+export function AdminDashboardView({ stats, isLoading: isStatsLoading }: AdminDashboardViewProps) {
+  const { user: loggedInUser } = useAuth();
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+  const [allUsers, setAllUsers] = useState<AuthenticatedUser[]>([]);
+  const [isUsersLoading, setIsUsersLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  
+  // State for role change dialog (still needed)
+  const [selectedUser, setSelectedUser] = useState<AuthenticatedUser | null>(null);
+  const [newRole, setNewRole] = useState<'customer' | 'seller' | 'admin'>('customer');
+
+  const fetchUsers = useCallback(async () => {
+    if (!loggedInUser) return;
+    setIsUsersLoading(true);
+    try {
+      const response = await apiClient.users.adminListAll();
+      const userList = response.data;
+      const adminInList = userList.find(u => u._id === loggedInUser._id);
+      if (!adminInList) { 
+        // We need to allow reassignment here, so we'll disable the lint rule for this block.
+        // eslint-disable-next-line prefer-const
+        let mutableUserList = [...userList];
+        mutableUserList.unshift(loggedInUser); 
+        setAllUsers(mutableUserList);
+      } else {
+        setAllUsers(userList);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch user list.');
+    } finally {
+      setIsUsersLoading(false);
+    }
+  }, [loggedInUser]);
+
+  useEffect(() => {
+    if (loggedInUser) { fetchUsers(); }
+  }, [fetchUsers, loggedInUser]);
+
+  const filteredUsers = useMemo(() => {
+    return allUsers.filter(user => {
+      const searchMatch = searchTerm.length < 2 || `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const roleMatch = roleFilter === 'all' || user.role === roleFilter;
+      const statusMatch = statusFilter === 'all' ||
+        (statusFilter === 'verified' && user.emailVerified) ||
+        (statusFilter === 'unverified' && !user.emailVerified) ||
+        (statusFilter === 'active' && user.isActive) ||
+        (statusFilter === 'blocked' && !user.isActive);
+      return searchMatch && roleMatch && statusMatch;
+    });
+  }, [allUsers, searchTerm, roleFilter, statusFilter]);
+
+  const handleManualVerify = async (userId: string) => {
+    setActionInProgress(userId);
+    try {
+      await apiClient.users.adminVerify(userId);
+      toast.success('User successfully verified.');
+      await fetchUsers();
+    } catch (error) {
+      let errorMessage = 'Verification failed.';
+      if (error instanceof AxiosError && error.response?.data?.message) { errorMessage = error.response.data.message as string; }
+      toast.error(errorMessage);
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  const handleUpdateRole = async () => {
+    if (!selectedUser) return;
+    setActionInProgress(selectedUser._id);
+    try {
+      await apiClient.users.adminUpdateRole(selectedUser._id, { role: newRole });
+      toast.success(`Role for ${selectedUser.firstName} updated to ${newRole}.`);
+      setSelectedUser(null);
+      await fetchUsers();
+    } catch (error) {
+      let errorMessage = 'Role update failed.';
+       if (error instanceof AxiosError && error.response?.data?.message) { errorMessage = error.response.data.message as string; }
+      toast.error(errorMessage);
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+  
+  const openRoleChangeDialog = (user: AuthenticatedUser) => {
+    setSelectedUser(user);
+    setNewRole(user.role);
+  };
+
+  const handleDeleteUser = async (user: AuthenticatedUser) => {
+    setActionInProgress(user._id);
+    try {
+      await apiClient.users.adminDelete(user._id);
+      toast.success(`User ${user.email} has been deleted.`);
+      await fetchUsers();
+    } catch (error) {
+      let errorMessage = 'Failed to delete user.';
+       if (error instanceof AxiosError && error.response?.data?.message) { errorMessage = error.response.data.message as string; }
+      toast.error(errorMessage);
+    } finally {
+       setActionInProgress(null);
+    }
+  }
+
+  if (isStatsLoading) {
     return (
       <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -36,60 +167,98 @@ export function AdminDashboardView({ stats, isLoading }: AdminDashboardViewProps
           <Skeleton className="h-[108px] w-full" />
           <Skeleton className="h-[108px] w-full" />
         </div>
-        <div className="grid gap-8 lg:grid-cols-2">
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      {/* === Top Row Stat Cards === */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard title="Total Products" value={stats?.totalProducts ?? 0} icon={Package} description="Across all sellers" />
-        <StatCard title="Total Users" value={stats?.totalUsers ?? 0} icon={Users} description="Customers & Sellers" />
+        <StatCard title="Total Users" value={allUsers.length} icon={Users} description="Customers & Sellers" />
         <StatCard title="Pending Orders" value={stats?.pendingOrdersCount ?? 0} icon={ShoppingCart} description="Awaiting fulfillment" />
       </div>
 
-      {/* === Second Row Infographics === */}
-      <div className="grid gap-8 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><History className="h-5 w-5"/> Recent Platform Searches</CardTitle>
-            <CardDescription>Last 10 search queries from all users.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {stats?.userActivity?.recentSearches && stats.userActivity.recentSearches.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {stats.userActivity.recentSearches.map((term, i) => (
-                  <Link key={i} href={`/search?q=${encodeURIComponent(term)}`}>
-                    <Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">{term}</Badge>
-                  </Link>
-                ))}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5"/> All Users</CardTitle>
+              <CardDescription>View, filter, and manage all users on the platform.</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input placeholder="Search name or email..." className="w-full sm:w-auto" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <Button variant="outline" size="icon" onClick={fetchUsers} disabled={isUsersLoading}><RefreshCw className={`h-4 w-4 ${isUsersLoading ? 'animate-spin' : ''}`} /></Button>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+              <Select value={roleFilter} onValueChange={setRoleFilter}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by role..." /></SelectTrigger><SelectContent><SelectItem value="all">All Roles</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="seller">Seller</SelectItem><SelectItem value="customer">Customer</SelectItem></SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by status..." /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="blocked">Blocked</SelectItem><SelectItem value="verified">Verified</SelectItem><SelectItem value="unverified">Unverified</SelectItem></SelectContent></Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="w-full">
+            <div className="min-w-[700px] border rounded-lg">
+              <div className="flex items-center p-3 font-medium text-muted-foreground bg-muted border-b"><div className="flex-1">User</div><div className="w-28 text-center">Role</div><div className="w-40 text-center">Status</div><div className="w-16 text-right">Actions</div></div>
+              <div>
+                {isUsersLoading ? (
+                  [...Array(5)].map((_, i) => ( <div key={i} className="flex items-center p-3 border-b last:border-b-0"> <div className="flex-1 flex items-center gap-3"><Skeleton className="h-10 w-10 rounded-full" /><div className="space-y-1.5"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-32" /></div></div> <div className="w-28 flex justify-center"><Skeleton className="h-6 w-20 rounded-full" /></div> <div className="w-40 flex justify-center gap-4"><Skeleton className="h-5 w-5 rounded-full" /><Skeleton className="h-6 w-16 rounded-full" /></div> <div className="w-16 flex justify-end"><Skeleton className="h-8 w-8" /></div> </div> ))
+                ) : filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <div key={user._id} className="flex items-center p-2 border-b last:border-b-0">
+                      <div className="flex-1 flex items-center gap-3 min-w-0"><Avatar className="h-10 w-10"><AvatarImage src={user.profilePicture || '/logo/logo.png'} alt={`${user.firstName}'s avatar`} /><AvatarFallback>{user.firstName?.charAt(0)}{user.lastName?.charAt(0)}</AvatarFallback></Avatar><div className="min-w-0"><Link href={`/profile/${user._id}`} className="font-medium text-sm truncate block hover:underline">{user.firstName} {user.lastName}</Link><p className="text-xs text-muted-foreground truncate">{user.email}</p></div></div>
+                      <div className="w-28 flex justify-center"><Badge variant={user.role === 'admin' ? 'destructive' : user.role === 'seller' ? 'secondary' : 'outline'}>{user.role}</Badge></div>
+                      <div className="w-40 flex items-center justify-center gap-4"><span title={user.emailVerified ? "Email Verified" : "Email Not Verified"}>{user.emailVerified ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : <XCircle className="h-5 w-5 text-red-500" />}</span><Badge variant={user.isActive ? 'default' : 'destructive'}>{user.isActive ? 'Active' : 'Blocked'}</Badge></div>
+                      <div className="w-16 flex justify-end">
+                        {actionInProgress === user._id ? (<Loader2 className="h-5 w-5 animate-spin mr-1.5" />) : (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {!user.emailVerified && (<DropdownMenuItem onClick={() => handleManualVerify(user._id)}>Verify Email</DropdownMenuItem>)}
+                              <DropdownMenuItem onClick={() => openRoleChangeDialog(user)}>Change Role</DropdownMenuItem>
+                              {loggedInUser?._id !== user._id && (<>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuSub>
+                                  <DropdownMenuSubTrigger className="text-red-600 focus:bg-red-50 focus:text-red-600"><Trash2 className="mr-2 h-4 w-4" />Delete User</DropdownMenuSubTrigger>
+                                  <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                      <DropdownMenuItem className="text-red-600 focus:bg-red-50 focus:text-red-600" onClick={() => handleDeleteUser(user)}>
+                                        <ShieldAlert className="mr-2 h-4 w-4" />
+                                        Confirm Permanent Deletion
+                                      </DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                  </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                              </>)}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (<div className="text-center h-24 flex items-center justify-center text-muted-foreground">No users match the current filters.</div>)}
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">No recent search history found.</p>
-            )}
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><BarChart2 className="h-5 w-5"/> Platform Analytics</CardTitle>
-            <CardDescription>This is a placeholder for platform-wide analytics.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex justify-between"><span>New Users Today</span> <span>15</span></li>
-              <li className="flex justify-between"><span>Products Added Today</span> <span>42</span></li>
-              <li className="flex justify-between"><span>Total Revenue (Month)</span> <span>৳250,430.00</span></li>
-              <li className="flex justify-between"><span>API Health</span> <span className="text-green-500 font-semibold">Healthy</span></li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      {/* --- This Dialog is for the "Change Role" action --- */}
+      <Dialog open={!!selectedUser} onOpenChange={(isOpen: boolean) => !isOpen && setSelectedUser(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Change Role for {selectedUser?.firstName} {selectedUser?.lastName}</DialogTitle><DialogDescription>Select the new role for this user. This action is immediate.</DialogDescription></DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="role-select">New Role</Label>
+            <Select onValueChange={(value) => setNewRole(value as 'customer' | 'seller' | 'admin')} value={newRole}>
+              <SelectTrigger id="role-select"><SelectValue placeholder="Select a role" /></SelectTrigger>
+              <SelectContent><SelectItem value="customer">Customer</SelectItem><SelectItem value="seller">Seller</SelectItem><SelectItem value="admin">Admin</SelectItem></SelectContent>
+            </Select>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setSelectedUser(null)}>Cancel</Button><Button onClick={handleUpdateRole} disabled={actionInProgress === selectedUser?._id}>{actionInProgress === selectedUser?._id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Confirm Change</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

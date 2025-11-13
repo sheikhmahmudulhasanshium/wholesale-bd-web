@@ -1,4 +1,4 @@
-// app/dashboard/body.tsx
+// app/(routes)/dashboard/body.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -20,7 +20,6 @@ import { AdminDashboardView } from './views/admin-view';
 import { SellerDashboardView } from './views/seller-view';
 import { CustomerDashboardView } from './views/customer-view';
 
-// --- DASHBOARD NAVIGATION (Remains the same) ---
 const dashboardNavLinks = [
   { name: { en: 'Dashboard', bn: 'ড্যাশবোর্ড' }, href: '/dashboard', icon: LayoutDashboard },
   { name: { en: 'Products', bn: 'পণ্য' }, href: '/products', icon: Package },
@@ -28,7 +27,7 @@ const dashboardNavLinks = [
   { name: { en: 'Settings', bn: 'সেটিংস' }, href: '/dashboard/settings', icon: Settings },
 ];
 
-function DashboardNavMenu() {
+export function DashboardNavMenu() {
     const { language } = useLanguage();
     const pathname = usePathname();
     return (
@@ -54,7 +53,7 @@ function DashboardNavMenu() {
     );
 }
 
-function DashboardSidebar() {
+export function DashboardSidebar() {
     const { language } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     return (
@@ -86,25 +85,18 @@ function DashboardSidebar() {
     );
 }
 
-// =================================================================================
-// MAIN CLIENT PAGE COMPONENT (Refactored)
-// =================================================================================
-
 export default function DashboardClientPage() {
   const { user, isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const { stats, isLoading: isLoadingStats } = useDashboardStats();
   
-  // Redirect if not logged in. This logic stays in the parent component.
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
       router.replace('/login');
     }
   }, [isAuthLoading, isAuthenticated, router]);
   
-  // This function now delegates rendering to the appropriate view component.
   const renderDashboardView = () => {
-    // Show a general loading skeleton while authentication is in progress
     if (isAuthLoading) {
       return (
         <div className="space-y-8">
@@ -117,10 +109,8 @@ export default function DashboardClientPage() {
       );
     }
     
-    // Fallback if user is null after loading (should be redirected)
     if (!user) return null;
 
-    // Render the correct dashboard based on user role
     switch (user.role) {
       case 'admin':
         return <AdminDashboardView stats={stats} isLoading={isLoadingStats} />;
@@ -146,15 +136,19 @@ export default function DashboardClientPage() {
                 </>
               )}
             </h1>
-            <p className="text-muted-foreground mt-1">
+            {/* --- V THIS IS THE FIX --- */}
+            {/* Changed the parent <p> tag to a <div> tag */}
+            <div className="text-muted-foreground mt-1">
               {isAuthLoading ? (
                  <Skeleton className="h-5 w-80 mt-1" />
               ) : (
-                <>
+                // When not loading, we can safely use a <p> tag for the text
+                <p>
                   {user?.role === 'admin' ? "An overview of the platform's performance." : user?.role === 'seller' ? "An overview of your store's performance." : "Manage your account and view recent activity."}
-                </>
+                </p>
               )}
-            </p>
+            </div>
+            {/* --- ^ END OF FIX --- */}
           </div>
           {user?.role === 'seller' && (
             <Button asChild>
