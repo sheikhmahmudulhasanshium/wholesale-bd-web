@@ -24,7 +24,7 @@ import { CustomerDashboardView } from './views/customer-view';
 const dashboardNavLinks = [
   { name: { en: 'Dashboard', bn: 'ড্যাশবোর্ড' }, href: '/dashboard', icon: LayoutDashboard },
   { name: { en: 'Products', bn: 'পণ্য' }, href: '/products', icon: Package },
-  { name: { en: 'Orders', bn: 'অর্ডার' }, href: '/dashboard/orders', icon: ShoppingCart },
+  { name: { en: 'Orders', bn: 'অর্ডার' }, href: '/orders', icon: ShoppingCart },
   { name: { en: 'Settings', bn: 'সেটিংস' }, href: '/dashboard/settings', icon: Settings },
 ];
 
